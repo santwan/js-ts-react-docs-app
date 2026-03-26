@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JS + TS Notes — The this Keyword</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Fraunces:ital,wght@0,300;0,700;1,300;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f11;
+    --bg2: #161619;
+    --bg3: #1e1e23;
+    --bg4: #26262d;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8e6df;
+    --text2: #9b9890;
+    --text3: #5e5c57;
+    --js: #F0B429;
+    --js-dim2: rgba(240,180,41,0.06);
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #c084fc;
+    --interview: #fbbf24;
+    --interview-dim: rgba(251,191,36,0.08);
+    --ts: #3B82F6;
+    --ts-dim: rgba(59,130,246,0.08);
+    --ts-dim2: rgba(59,130,246,0.04);
+    --ts-border: rgba(59,130,246,0.25);
+    --ts-text: #93C5FD;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.75;
+    font-size: 15px;
+  }
+
+  .page { max-width: 780px; margin: 0 auto; padding: 0 2rem 6rem; }
+
+  .header { padding: 3.5rem 0 2.5rem; border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
+
+  .header-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--js);
+    margin-bottom: 0.75rem;
+  }
+
+  .header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(28px, 5vw, 42px);
+    line-height: 1.15;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .header h1 em { font-style: italic; color: var(--js); }
+  .header-meta { display: flex; gap: 16px; margin-top: 1.25rem; flex-wrap: wrap; }
+
+  .meta-pill {
+    font-size: 11px;
+    font-weight: 400;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .meta-pill.js { border-color: rgba(240,180,41,0.3); color: var(--js); background: var(--js-dim2); }
+  .meta-pill.ts { border-color: var(--ts-border); color: var(--ts-text); background: var(--ts-dim2); }
+
+  .section { margin-bottom: 3.5rem; }
+
+  .section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .concept {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .concept::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--js);
+    border-radius: 3px 0 0 3px;
+    opacity: 0.5;
+  }
+
+  .concept.ts-concept::before { background: var(--ts); opacity: 0.7; }
+
+  .concept h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.01em;
+  }
+
+  .concept p { color: var(--text2); font-size: 14.5px; line-height: 1.7; }
+  .concept p + p { margin-top: 0.6rem; }
+
+  .mental-model {
+    background: var(--js-dim2);
+    border: 1px solid rgba(240,180,41,0.2);
+    border-radius: 10px;
+    padding: 1.1rem 1.4rem;
+    margin: 1rem 0 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .mental-model.ts-model { background: var(--ts-dim2); border-color: var(--ts-border); }
+  .mental-model-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .mental-model p { color: #d4a836; font-size: 13.5px; line-height: 1.6; font-style: italic; }
+  .mental-model.ts-model p { color: #93c5fd; }
+
+  pre {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 1rem 0 0;
+    overflow-x: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .k    { color: #c084fc; }
+  .v    { color: #60a5fa; }
+  .s    { color: #86efac; }
+  .n    { color: #fbbf24; }
+  .c    { color: #6b7280; font-style: italic; }
+  .fn   { color: #f0b429; }
+  .op   { color: #e879f9; }
+  .bool { color: #f97316; }
+  .ts-kw{ color: #93C5FD; }
+  .this { color: #f87171; font-weight: 600; }
+
+  .gotcha {
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .gotcha-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+  .gotcha p { font-size: 13.5px; color: #f9a8a8; line-height: 1.6; }
+  .gotcha p strong { color: var(--red); }
+
+  /* ── This binding rule cards ── */
+  .rule-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 1rem;
+  }
+
+  .rule-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+  }
+
+  .rule-card-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--js);
+    margin-bottom: 5px;
+  }
+
+  .rule-card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .rule-card-desc {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .rule-card code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--purple);
+    background: var(--bg4);
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  /* ── Compare grid ── */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem; }
+
+  .compare-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.25rem; }
+  .compare-card.good-card { border-color: rgba(74,222,128,0.2); background: rgba(74,222,128,0.04); }
+  .compare-card.bad-card  { border-color: rgba(248,113,113,0.2); background: rgba(248,113,113,0.04); }
+
+  .compare-card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .good-card .compare-card-label { color: var(--green); }
+  .bad-card  .compare-card-label { color: var(--red); }
+  .compare-card pre { margin: 0; padding: 0; background: none; border: none; font-size: 12.5px; }
+
+  /* ── Binding table ── */
+  .bind-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .bind-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    text-align: left;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border2);
+    background: var(--bg3);
+  }
+
+  .bind-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text2);
+    line-height: 1.5;
+    font-size: 12.5px;
+  }
+
+  .bind-table tr:last-child td { border-bottom: none; }
+  .bind-table tr:hover td { background: var(--bg3); }
+  .bind-table td:first-child { font-family: 'IBM Plex Mono', monospace; color: var(--purple); font-size: 12px; white-space: nowrap; }
+  .bind-table td:nth-child(2) { color: var(--js); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+  /* ── Interview ── */
+  .interview-section {
+    background: var(--interview-dim);
+    border: 1px solid rgba(251,191,36,0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+  }
+
+  .interview-header {
+    background: rgba(251,191,36,0.06);
+    padding: 0.65rem 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(251,191,36,0.1);
+  }
+
+  .interview-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: rgba(251,191,36,0.15);
+    color: var(--interview);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .interview-header span { font-size: 12px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; }
+
+  .qa-item { padding: 1.25rem 1.4rem; border-bottom: 1px solid rgba(251,191,36,0.08); }
+  .qa-item:last-child { border-bottom: none; }
+
+  .qa-q {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+    display: flex;
+    gap: 8px;
+  }
+
+  .qa-q::before {
+    content: 'Q';
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--interview);
+    background: rgba(251,191,36,0.12);
+    padding: 1px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    height: fit-content;
+    margin-top: 2px;
+  }
+
+  .qa-a { font-size: 14px; color: var(--text2); line-height: 1.7; padding-left: 28px; }
+  .qa-a strong { color: var(--text); font-weight: 500; }
+
+  /* ── TS Banner ── */
+  .ts-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--ts-dim);
+    border: 1px solid var(--ts-border);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .ts-banner-icon { font-size: 20px; flex-shrink: 0; }
+  .ts-banner p { font-size: 13.5px; color: var(--ts-text); line-height: 1.6; }
+  .ts-banner p strong { color: #bfdbfe; font-weight: 500; }
+
+  /* ── Summary ── */
+  .summary-card {
+    background: var(--bg2);
+    border: 1px solid rgba(240,180,41,0.2);
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1rem;
+  }
+
+  .summary-card h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--js);
+    margin-bottom: 1rem;
+  }
+
+  .summary-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+  .summary-list li {
+    font-size: 13.5px;
+    color: var(--text2);
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .summary-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--js);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+
+  .summary-list li strong { color: var(--text); font-weight: 500; }
+
+  .breadcrumb {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    padding: 1.5rem 0 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .breadcrumb .current { color: var(--js); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="breadcrumb">
+    <span>JavaScript Notes</span>
+    <span>›</span>
+    <span>Phase 1 — Foundations</span>
+    <span>›</span>
+    <span class="current">Topic 05</span>
+  </div>
+
+  <header class="header">
+    <div class="header-eyebrow">Phase 1 · Topic 05</div>
+    <h1>The <em>this</em> Keyword</h1>
+    <div class="header-meta">
+      <span class="meta-pill js">JS Core</span>
+      <span class="meta-pill ts">TypeScript</span>
+      <span class="meta-pill">Interview Topic</span>
+      <span class="meta-pill">Concept</span>
+    </div>
+  </header>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 1 — What is this?                 -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">01 — What is this?</div>
+
+    <div class="concept">
+      <h3>this is a Reference to the Execution Context</h3>
+      <p><code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> is a special keyword that refers to the <strong style="color:var(--text)">object that is currently executing the function</strong>. It is not set when you write the function — it is determined at <strong style="color:var(--text)">call time</strong>, based on how the function is invoked. This is what makes <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> confusing — the same function can have a different <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> depending on how it's called.</p>
+      <p>There are <strong style="color:var(--text)">four binding rules</strong> that determine what <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> is, evaluated in order of precedence. Once you know these four rules, <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> becomes completely predictable.</p>
+
+      <div class="mental-model">
+        <div class="mental-model-icon">💡</div>
+        <p>Think of <code>this</code> as the answer to "who called me?". A function doesn't own <code>this</code> — its caller sets it. If <code>user.greet()</code> calls a function, then <code>this</code> is <code>user</code>. If a bare <code>greet()</code> calls it, <code>this</code> is the global object. Same function, different caller, different <code>this</code>.</p>
+      </div>
+    </div>
+
+    <!-- The four rules overview -->
+    <div class="rule-grid">
+      <div class="rule-card">
+        <div class="rule-card-num">Rule 1 — Highest priority</div>
+        <div class="rule-card-title">new binding</div>
+        <div class="rule-card-desc">When called with <code>new</code>, <code>this</code> is the newly created object.</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-card-num">Rule 2</div>
+        <div class="rule-card-title">Explicit binding</div>
+        <div class="rule-card-desc"><code>call()</code>, <code>apply()</code>, <code>bind()</code> — you set <code>this</code> yourself.</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-card-num">Rule 3</div>
+        <div class="rule-card-title">Implicit binding</div>
+        <div class="rule-card-desc">Called as <code>obj.method()</code> — <code>this</code> is the object left of the dot.</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-card-num">Rule 4 — Lowest priority</div>
+        <div class="rule-card-title">Default binding</div>
+        <div class="rule-card-desc">Plain function call — <code>this</code> is <code>window</code> (or <code>undefined</code> in strict mode).</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 2 — Rule 4: Default Binding       -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">02 — Rule 4: Default Binding (Plain Function Call)</div>
+
+    <div class="concept">
+      <h3>The Fallback — and the Most Surprising</h3>
+      <p>When a function is called as a standalone function — no dot, no <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">new</code>, no <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">call/apply/bind</code> — <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> defaults to the <strong style="color:var(--text)">global object</strong> (<code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">window</code> in browsers). In <strong style="color:var(--text)">strict mode</strong> (which TypeScript enforces by default), it's <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">undefined</code> instead.</p>
+
+      <pre><span class="k">function</span> <span class="fn">showThis</span>() {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="this">this</span>);
+}
+
+<span class="fn">showThis</span>(); <span class="c">// window (browser, non-strict) / undefined (strict mode)</span>
+
+<span class="c">// Strict mode — common source of "Cannot read property of undefined"</span>
+<span class="s">"use strict"</span>;
+
+<span class="k">function</span> <span class="fn">strictThis</span>() {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="this">this</span>); <span class="c">// undefined</span>
+}
+
+<span class="fn">strictThis</span>(); <span class="c">// undefined — and accessing this.anything crashes</span></pre>
+
+      <div class="gotcha">
+        <div class="gotcha-icon">⚡</div>
+        <p><strong>TypeScript (and ES modules) run in strict mode by default.</strong> This means plain function calls give you <code style="font-family:'IBM Plex Mono',monospace;color:#fca5a5">this === undefined</code>, not the global object. Accessing any property on it will throw. This is actually safer — it makes the bug loud and obvious.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 3 — Rule 3: Implicit Binding      -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">03 — Rule 3: Implicit Binding (Method Call)</div>
+
+    <div class="concept">
+      <h3>The Object Left of the Dot Owns this</h3>
+      <p>When a function is called as a method — <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">obj.method()</code> — <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> is implicitly set to <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">obj</code>. Whatever sits to the <em>left of the last dot</em> at call time becomes <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code>. This is the most common binding you'll work with.</p>
+
+      <pre><span class="k">const</span> <span class="v">user</span> <span class="op">=</span> {
+  <span class="v">name</span>: <span class="s">"Arjun"</span>,
+  <span class="fn">greet</span>() {
+    <span class="k">return</span> <span class="s">"Hello, I'm "</span> <span class="op">+</span> <span class="this">this</span>.<span class="v">name</span>;
+  }
+};
+
+<span class="v">user</span>.<span class="fn">greet</span>(); <span class="c">// "Hello, I'm Arjun" — this = user ✓</span>
+
+<span class="c">// Nested objects — this is always the immediate parent</span>
+<span class="k">const</span> <span class="v">company</span> <span class="op">=</span> {
+  <span class="v">name</span>: <span class="s">"Acme"</span>,
+  <span class="v">ceo</span>: {
+    <span class="v">name</span>: <span class="s">"Alice"</span>,
+    <span class="fn">introduce</span>() {
+      <span class="k">return</span> <span class="s">"I'm "</span> <span class="op">+</span> <span class="this">this</span>.<span class="v">name</span>; <span class="c">// this = company.ceo (the immediate dot-owner)</span>
+    }
+  }
+};
+
+<span class="v">company</span>.<span class="v">ceo</span>.<span class="fn">introduce</span>(); <span class="c">// "I'm Alice" — not "I'm Acme"</span></pre>
+    </div>
+
+    <div class="concept">
+      <h3>Implicit Binding Loss — The #1 this Bug</h3>
+      <p>Implicit binding is easily lost. If you extract a method from an object and call it as a plain function, the object connection is severed and <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> falls back to default binding.</p>
+
+      <div class="compare-grid">
+        <div class="compare-card bad-card">
+          <div class="compare-card-label">⚠ Binding lost on extraction</div>
+          <pre><span class="k">const</span> <span class="v">user</span> <span class="op">=</span> {
+  <span class="v">name</span>: <span class="s">"Arjun"</span>,
+  <span class="fn">greet</span>() {
+    <span class="k">return</span> <span class="this">this</span>.<span class="v">name</span>;
+  }
+};
+
+<span class="k">const</span> <span class="v">fn</span> <span class="op">=</span> <span class="v">user</span>.<span class="v">greet</span>; <span class="c">// extract</span>
+<span class="fn">fn</span>(); <span class="c">// undefined 😱</span>
+<span class="c">// called as plain fn(), not user.fn()</span></pre>
+        </div>
+        <div class="compare-card bad-card">
+          <div class="compare-card-label">⚠ Binding lost in callback</div>
+          <pre><span class="k">const</span> <span class="v">user</span> <span class="op">=</span> {
+  <span class="v">name</span>: <span class="s">"Arjun"</span>,
+  <span class="fn">delayedGreet</span>() {
+    <span class="fn">setTimeout</span>(<span class="k">function</span>() {
+      <span class="fn">console</span>.<span class="fn">log</span>(<span class="this">this</span>.<span class="v">name</span>);
+      <span class="c">// this = window 😱</span>
+    }, <span class="n">100</span>);
+  }
+};
+
+<span class="v">user</span>.<span class="fn">delayedGreet</span>();</pre>
+        </div>
+      </div>
+
+      <div class="mental-model">
+        <div class="mental-model-icon">💡</div>
+        <p>The rule is simple: <strong>if there's no dot at the call site, implicit binding doesn't apply.</strong> <code>const fn = obj.method; fn()</code> — the dot is gone by call time. <code>setTimeout(obj.method, 100)</code> — same thing, the function is passed as a reference, no dot at the moment it runs.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 4 — Rule 2: Explicit Binding      -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">04 — Rule 2: Explicit Binding (call, apply, bind)</div>
+
+    <div class="concept">
+      <h3>You Take Control of this Yourself</h3>
+      <p>JavaScript gives you three methods — <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">call()</code>, <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">apply()</code>, and <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">bind()</code> — that let you explicitly set what <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> will be when a function runs. All three are methods on the Function prototype — meaning every function in JavaScript has them.</p>
+
+      <pre><span class="k">function</span> <span class="fn">greet</span>(<span class="v">greeting</span>, <span class="v">punctuation</span>) {
+  <span class="k">return</span> <span class="v">greeting</span> <span class="op">+</span> <span class="s">" "</span> <span class="op">+</span> <span class="this">this</span>.<span class="v">name</span> <span class="op">+</span> <span class="v">punctuation</span>;
+}
+
+<span class="k">const</span> <span class="v">user</span> <span class="op">=</span> { <span class="v">name</span>: <span class="s">"Arjun"</span> };
+
+<span class="c">// call — invoke immediately, args passed individually</span>
+<span class="fn">greet</span>.<span class="fn">call</span>(<span class="v">user</span>, <span class="s">"Hello"</span>, <span class="s">"!"</span>);    <span class="c">// "Hello Arjun!"</span>
+
+<span class="c">// apply — invoke immediately, args passed as array</span>
+<span class="fn">greet</span>.<span class="fn">apply</span>(<span class="v">user</span>, [<span class="s">"Hello"</span>, <span class="s">"!"</span>]);  <span class="c">// "Hello Arjun!"</span>
+
+<span class="c">// bind — returns a NEW function with this permanently locked</span>
+<span class="k">const</span> <span class="v">boundGreet</span> <span class="op">=</span> <span class="fn">greet</span>.<span class="fn">bind</span>(<span class="v">user</span>);
+<span class="fn">boundGreet</span>(<span class="s">"Hey"</span>, <span class="s">"."</span>);             <span class="c">// "Hey Arjun."</span>
+<span class="fn">boundGreet</span>(<span class="s">"Hi"</span>, <span class="s">"!"</span>);              <span class="c">// "Hi Arjun!" — this is always user</span></pre>
+
+      <div class="mental-model">
+        <div class="mental-model-icon">💡</div>
+        <p><strong>call = call now, comma-separated args.</strong> <strong>apply = call now, array of args.</strong> <strong>bind = don't call yet, give me a new function with this locked in.</strong> In modern code, <code>bind()</code> is the most useful of the three — it's how you fix detached methods and pass methods as callbacks while preserving <code>this</code>.</p>
+      </div>
+    </div>
+
+    <div class="concept">
+      <h3>bind() in Practice — Fixing Detached Methods</h3>
+      <pre><span class="k">class</span> <span class="fn">Counter</span> {
+  <span class="fn">constructor</span>() {
+    <span class="k">this</span>.<span class="v">count</span> <span class="op">=</span> <span class="n">0</span>;
+    <span class="c">// Fix: bind at construction time so increment always has the right this</span>
+    <span class="k">this</span>.<span class="v">increment</span> <span class="op">=</span> <span class="k">this</span>.<span class="v">increment</span>.<span class="fn">bind</span>(<span class="k">this</span>);
+  }
+
+  <span class="fn">increment</span>() {
+    <span class="k">this</span>.<span class="v">count</span><span class="op">++</span>;
+    <span class="fn">console</span>.<span class="fn">log</span>(<span class="k">this</span>.<span class="v">count</span>);
+  }
+}
+
+<span class="k">const</span> <span class="v">counter</span> <span class="op">=</span> <span class="k">new</span> <span class="fn">Counter</span>();
+<span class="k">const</span> <span class="v">btn</span> <span class="op">=</span> <span class="v">document</span>.<span class="fn">querySelector</span>(<span class="s">"button"</span>);
+<span class="v">btn</span>.<span class="fn">addEventListener</span>(<span class="s">"click"</span>, <span class="v">counter</span>.<span class="v">increment</span>); <span class="c">// ✓ this is always counter</span>
+
+<span class="c">// Modern alternative: arrow function in class field (same result, cleaner)</span>
+<span class="k">class</span> <span class="fn">Counter</span> {
+  <span class="v">count</span> <span class="op">=</span> <span class="n">0</span>;
+  <span class="v">increment</span> <span class="op">=</span> () <span class="op">=&gt;</span> { <span class="c">// arrow function class field — lexical this</span>
+    <span class="k">this</span>.<span class="v">count</span><span class="op">++</span>;
+    <span class="fn">console</span>.<span class="fn">log</span>(<span class="k">this</span>.<span class="v">count</span>);
+  };
+}</pre>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 5 — Rule 1: new Binding           -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">05 — Rule 1: new Binding (Constructor Call)</div>
+
+    <div class="concept">
+      <h3>new Creates a Fresh Object and Binds this to It</h3>
+      <p>When you call a function with <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">new</code>, JavaScript does four things automatically: (1) creates a new empty object, (2) sets <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> to that object inside the function, (3) links the object's prototype to the function's <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">prototype</code> property, and (4) returns the object (unless the function explicitly returns a different object).</p>
+
+      <pre><span class="k">function</span> <span class="fn">Person</span>(<span class="v">name</span>, <span class="v">age</span>) {
+  <span class="c">// 'this' is the brand new object created by 'new'</span>
+  <span class="this">this</span>.<span class="v">name</span> <span class="op">=</span> <span class="v">name</span>;
+  <span class="this">this</span>.<span class="v">age</span>  <span class="op">=</span> <span class="v">age</span>;
+  <span class="c">// implicitly returns 'this'</span>
+}
+
+<span class="k">const</span> <span class="v">arjun</span> <span class="op">=</span> <span class="k">new</span> <span class="fn">Person</span>(<span class="s">"Arjun"</span>, <span class="n">25</span>);
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="v">arjun</span>.<span class="v">name</span>); <span class="c">// "Arjun"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="v">arjun</span>.<span class="v">age</span>);  <span class="c">// 25</span>
+
+<span class="c">// new binding has highest precedence — even bind can't override it</span>
+<span class="k">const</span> <span class="v">fakeThis</span> <span class="op">=</span> { <span class="v">name</span>: <span class="s">"fake"</span> };
+<span class="k">const</span> <span class="v">BoundPerson</span> <span class="op">=</span> <span class="fn">Person</span>.<span class="fn">bind</span>(<span class="v">fakeThis</span>);
+<span class="k">const</span> <span class="v">raj</span> <span class="op">=</span> <span class="k">new</span> <span class="fn">BoundPerson</span>(<span class="s">"Raj"</span>, <span class="n">30</span>); <span class="c">// new wins — this is the new object</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="v">raj</span>.<span class="v">name</span>); <span class="c">// "Raj" — not "fake"</span></pre>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 6 — Arrow Functions & this        -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">06 — Arrow Functions: The Exception to All Rules</div>
+
+    <div class="concept">
+      <h3>Arrow Functions Don't Follow Any of the Four Rules</h3>
+      <p>Arrow functions have <strong style="color:var(--text)">no own <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code></strong>. They don't create a <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> binding at all. When you reference <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> inside an arrow function, JavaScript goes to the <em>enclosing lexical scope</em> and uses that scope's <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> — whatever it is at the point the arrow function was <em>written</em>. No rules apply, no binding happens. It's purely lexical.</p>
+
+      <pre><span class="k">const</span> <span class="v">user</span> <span class="op">=</span> {
+  <span class="v">name</span>: <span class="s">"Arjun"</span>,
+  <span class="v">hobbies</span>: [<span class="s">"coding"</span>, <span class="s">"reading"</span>],
+
+  <span class="fn">printHobbies</span>() {
+    <span class="c">// 'this' here = user (implicit binding, method call)</span>
+    <span class="k">this</span>.<span class="v">hobbies</span>.<span class="fn">forEach</span>(<span class="v">hobby</span> <span class="op">=&gt;</span> {
+      <span class="c">// Arrow function — no own 'this', inherits from printHobbies</span>
+      <span class="c">// So 'this' here is also 'user' ✓</span>
+      <span class="fn">console</span>.<span class="fn">log</span>(<span class="this">this</span>.<span class="v">name</span> <span class="op">+</span> <span class="s">" likes "</span> <span class="op">+</span> <span class="v">hobby</span>);
+    });
+  }
+};
+
+<span class="v">user</span>.<span class="fn">printHobbies</span>();
+<span class="c">// "Arjun likes coding"</span>
+<span class="c">// "Arjun likes reading"</span>
+
+<span class="c">// You cannot bind a different 'this' to an arrow function — it's ignored</span>
+<span class="k">const</span> <span class="v">arrow</span> <span class="op">=</span> () <span class="op">=&gt;</span> <span class="this">this</span>;
+<span class="v">arrow</span>.<span class="fn">call</span>({ <span class="v">name</span>: <span class="s">"fake"</span> }); <span class="c">// still the lexical this — call is ignored</span></pre>
+
+      <div class="mental-model">
+        <div class="mental-model-icon">💡</div>
+        <p>Arrow functions are <strong>this-transparent</strong>. They pass <code>this</code> through from the outside unchanged. That's why they're perfect for callbacks inside methods — they don't disrupt the outer <code>this</code>. And that's why they're wrong for object methods themselves — they'd inherit from the global scope, not the object.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 7 — The Quick-Reference Table     -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">07 — this Binding Quick Reference</div>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <table class="bind-table">
+        <thead>
+          <tr>
+            <th>How function is called</th>
+            <th>this equals</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>fn()</td>
+            <td>window / undefined</td>
+            <td>Default binding. undefined in strict mode / TypeScript</td>
+          </tr>
+          <tr>
+            <td>obj.fn()</td>
+            <td>obj</td>
+            <td>Implicit binding. Object left of the dot</td>
+          </tr>
+          <tr>
+            <td>fn.call(ctx, a, b)</td>
+            <td>ctx</td>
+            <td>Explicit. Runs immediately with individual args</td>
+          </tr>
+          <tr>
+            <td>fn.apply(ctx, [a,b])</td>
+            <td>ctx</td>
+            <td>Explicit. Runs immediately with array of args</td>
+          </tr>
+          <tr>
+            <td>fn.bind(ctx)</td>
+            <td>ctx (permanent)</td>
+            <td>Explicit. Returns new function, doesn't run yet</td>
+          </tr>
+          <tr>
+            <td>new fn()</td>
+            <td>New empty object</td>
+            <td>Highest priority. Overrides bind</td>
+          </tr>
+          <tr>
+            <td>() => { }</td>
+            <td>Enclosing this</td>
+            <td>Lexical. No own this. call/apply/bind have no effect</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 8 — Interview Q&A (JS)            -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">08 — Interview Q&amp;A</div>
+
+    <div class="interview-section">
+      <div class="interview-header">
+        <span class="interview-badge">Interview</span>
+        <span>Questions you must be able to answer out loud</span>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What is this in JavaScript?</div>
+        <div class="qa-a">
+          <code style="font-family:'IBM Plex Mono',monospace">this</code> is a keyword that refers to the object currently executing the function. Its value isn't determined when you write the function — it's determined at <strong>call time</strong>, based on how the function is invoked. There are four binding rules, in order of precedence: <strong>new</strong> binding (highest), <strong>explicit</strong> binding (call/apply/bind), <strong>implicit</strong> binding (method call), and <strong>default</strong> binding (plain function call, lowest).
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What is the difference between call, apply, and bind?</div>
+        <div class="qa-a">
+          All three explicitly set <code style="font-family:'IBM Plex Mono',monospace">this</code> for a function. <strong>call</strong> invokes the function immediately, passing arguments individually. <strong>apply</strong> invokes immediately, passing arguments as an array. <strong>bind</strong> does not invoke — it returns a new function with <code style="font-family:'IBM Plex Mono',monospace">this</code> permanently locked to the value you pass. <code style="font-family:'IBM Plex Mono',monospace">bind</code> is the most commonly used of the three in practice.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">Why do arrow functions solve the this problem in callbacks?</div>
+        <div class="qa-a">
+          Regular functions create their own <code style="font-family:'IBM Plex Mono',monospace">this</code> binding when called — so a callback passed to <code style="font-family:'IBM Plex Mono',monospace">setTimeout</code> or <code style="font-family:'IBM Plex Mono',monospace">forEach</code> gets a new <code style="font-family:'IBM Plex Mono',monospace">this</code> (usually <code style="font-family:'IBM Plex Mono',monospace">window</code> or <code style="font-family:'IBM Plex Mono',monospace">undefined</code>), losing the outer method's <code style="font-family:'IBM Plex Mono',monospace">this</code>. Arrow functions have no own <code style="font-family:'IBM Plex Mono',monospace">this</code> — they inherit it from the surrounding scope where they were written. So using an arrow function as a callback inside a method preserves the method's <code style="font-family:'IBM Plex Mono',monospace">this</code>.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What is implicit binding loss?</div>
+        <div class="qa-a">
+          Implicit binding loss happens when you extract a method from an object and call it as a plain function. <code style="font-family:'IBM Plex Mono',monospace">const fn = obj.method; fn()</code> — the dot is gone at call time, so implicit binding doesn't apply and <code style="font-family:'IBM Plex Mono',monospace">this</code> falls back to the default. It also happens when passing a method as a callback — the function reference is passed without its object context. Fix it with <code style="font-family:'IBM Plex Mono',monospace">bind()</code> or an arrow function wrapper.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">Can you use call or apply to change the this of an arrow function?</div>
+        <div class="qa-a">
+          No. Arrow functions have no own <code style="font-family:'IBM Plex Mono',monospace">this</code> — <code style="font-family:'IBM Plex Mono',monospace">call</code>, <code style="font-family:'IBM Plex Mono',monospace">apply</code>, and <code style="font-family:'IBM Plex Mono',monospace">bind</code> are all silently ignored for the <code style="font-family:'IBM Plex Mono',monospace">this</code> binding. The arrow function will always use the <code style="font-family:'IBM Plex Mono',monospace">this</code> from its enclosing scope at the time it was defined. This is by design — it's what makes them safe to use as callbacks.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What does new do to this?</div>
+        <div class="qa-a">
+          When you call a function with <code style="font-family:'IBM Plex Mono',monospace">new</code>, JavaScript creates a brand new empty object, sets <code style="font-family:'IBM Plex Mono',monospace">this</code> to that object inside the function, links the object's prototype, and then returns that object. <code style="font-family:'IBM Plex Mono',monospace">new</code> binding has the highest precedence — it overrides even <code style="font-family:'IBM Plex Mono',monospace">bind()</code>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!--  TYPESCRIPT SECTION                                            -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+
+  <div class="ts-banner">
+    <div class="ts-banner-icon">🔷</div>
+    <p><strong>TypeScript Layer</strong> — TypeScript makes <code style="font-family:'IBM Plex Mono',monospace">this</code> safer in two key ways: it can type-check what <code style="font-family:'IBM Plex Mono',monospace">this</code> refers to inside a function, and it enforces strict mode by default — meaning unsafe default binding gives you <code style="font-family:'IBM Plex Mono',monospace">undefined</code> instead of silently using the global object.</p>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 9 — this in TypeScript Classes    -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">09 — this in TypeScript Classes</div>
+
+    <div class="concept ts-concept">
+      <h3>TypeScript Knows the Type of this Inside Classes</h3>
+      <p>Inside a TypeScript class, <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> is fully typed — TypeScript knows its type is the class itself. This means you get full autocompletion and type checking on everything you access through <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code>. It will also catch cases where you pass a method as a callback and lose <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> — at compile time.</p>
+
+      <pre><span class="k">class</span> <span class="fn">UserService</span> {
+  <span class="k">private</span> <span class="v">users</span>: <span class="ts-kw">string</span>[] <span class="op">=</span> [];
+
+  <span class="fn">addUser</span>(<span class="v">name</span>: <span class="ts-kw">string</span>): <span class="ts-kw">void</span> {
+    <span class="k">this</span>.<span class="v">users</span>.<span class="fn">push</span>(<span class="v">name</span>); <span class="c">// TS knows this.users is string[] ✓</span>
+  }
+
+  <span class="fn">getCount</span>(): <span class="ts-kw">number</span> {
+    <span class="k">return</span> <span class="k">this</span>.<span class="v">users</span>.<span class="v">length</span>; <span class="c">// fully typed ✓</span>
+  }
+}
+
+<span class="k">const</span> <span class="v">service</span> <span class="op">=</span> <span class="k">new</span> <span class="fn">UserService</span>();
+<span class="v">service</span>.<span class="fn">addUser</span>(<span class="s">"Arjun"</span>);
+
+<span class="c">// Arrow function class fields — the modern TS pattern for safe this</span>
+<span class="k">class</span> <span class="fn">Button</span> {
+  <span class="v">label</span>: <span class="ts-kw">string</span>;
+
+  <span class="fn">constructor</span>(<span class="v">label</span>: <span class="ts-kw">string</span>) {
+    <span class="k">this</span>.<span class="v">label</span> <span class="op">=</span> <span class="v">label</span>;
+  }
+
+  <span class="c">// Arrow field — this is always the Button instance, even as a callback</span>
+  <span class="v">handleClick</span> <span class="op">=</span> (): <span class="ts-kw">void</span> <span class="op">=&gt;</span> {
+    <span class="fn">console</span>.<span class="fn">log</span>(<span class="s">"Clicked: "</span> <span class="op">+</span> <span class="k">this</span>.<span class="v">label</span>); <span class="c">// always safe ✓</span>
+  };
+}
+
+<span class="k">const</span> <span class="v">btn</span> <span class="op">=</span> <span class="k">new</span> <span class="fn">Button</span>(<span class="s">"Submit"</span>);
+<span class="v">document</span>.<span class="fn">addEventListener</span>(<span class="s">"click"</span>, <span class="v">btn</span>.<span class="v">handleClick</span>); <span class="c">// ✓ this is safe</span></pre>
+
+      <div class="mental-model ts-model">
+        <div class="mental-model-icon">💡</div>
+        <p>The <strong>arrow function class field</strong> pattern (<code style="font-family:'IBM Plex Mono',monospace">handleClick = () => {}</code>) is the standard TypeScript solution for event handlers and callbacks from classes. It's cleaner than <code style="font-family:'IBM Plex Mono',monospace">bind(this)</code> in the constructor and fully type-safe. You'll see this pattern everywhere in React class components and TypeScript services.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 10 — The this Parameter in TS     -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">10 — The this Parameter in TypeScript</div>
+
+    <div class="concept ts-concept">
+      <h3>Explicitly Typing What this Must Be</h3>
+      <p>TypeScript lets you add a special <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> parameter as the <em>first parameter</em> of a function to declare what type <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> must be when the function is called. This is a <strong style="color:var(--text)">compile-time only</strong> feature — it disappears in the compiled JavaScript output. It lets TypeScript catch incorrect <code style="color:var(--red);font-family:'IBM Plex Mono',monospace">this</code> usage at build time.</p>
+
+      <pre><span class="c">// Without this parameter — TS doesn't know what 'this' is</span>
+<span class="k">function</span> <span class="fn">greet</span>() {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="this">this</span>.<span class="v">name</span>); <span class="c">// TS error in strict mode: 'this' implicitly has type 'any'</span>
+}
+
+<span class="c">// With this parameter — TS now knows the required shape</span>
+<span class="k">interface</span> <span class="fn">HasName</span> { <span class="v">name</span>: <span class="ts-kw">string</span> }
+
+<span class="k">function</span> <span class="fn">greet</span>(<span class="this">this</span>: <span class="fn">HasName</span>) {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="this">this</span>.<span class="v">name</span>); <span class="c">// ✓ TS knows this.name is a string</span>
+}
+
+<span class="k">const</span> <span class="v">user</span> <span class="op">=</span> { <span class="v">name</span>: <span class="s">"Arjun"</span> };
+<span class="fn">greet</span>.<span class="fn">call</span>(<span class="v">user</span>);       <span class="c">// ✓ user has .name</span>
+<span class="fn">greet</span>.<span class="fn">call</span>({ <span class="v">age</span>: <span class="n">25</span> }); <span class="c">// TS Error: { age: number } has no .name</span>
+
+<span class="c">// this parameter is erased in compiled JS — it's purely for TS checking</span></pre>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 11 — TS Interview Q&A             -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">11 — TypeScript Interview Q&amp;A</div>
+
+    <div class="interview-section">
+      <div class="interview-header">
+        <span class="interview-badge">Interview</span>
+        <span>TypeScript questions on this topic</span>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">How does TypeScript improve safety around this?</div>
+        <div class="qa-a">
+          In two key ways. First, TypeScript enforces strict mode by default — unsafe default binding gives you <code style="font-family:'IBM Plex Mono',monospace">undefined</code> (loud crash) instead of the global object (silent bug). Second, inside classes TypeScript fully types <code style="font-family:'IBM Plex Mono',monospace">this</code> — every property access through it is type-checked. And with the <code style="font-family:'IBM Plex Mono',monospace">this</code> parameter annotation on standalone functions, TypeScript can verify the correct object is passed when calling with <code style="font-family:'IBM Plex Mono',monospace">call/apply/bind</code>.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What is the arrow function class field pattern and when do you use it?</div>
+        <div class="qa-a">
+          It's declaring a class method as an arrow function assigned to a class field: <code style="font-family:'IBM Plex Mono',monospace">handleClick = () => { this.count++ }</code>. Because it's an arrow function, <code style="font-family:'IBM Plex Mono',monospace">this</code> is lexically bound to the class instance — it can never be lost no matter how the method is passed around. Use it for event handlers and callbacks that need to reference <code style="font-family:'IBM Plex Mono',monospace">this</code>. It's the modern alternative to <code style="font-family:'IBM Plex Mono',monospace">this.method = this.method.bind(this)</code> in the constructor.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What is the this parameter in TypeScript?</div>
+        <div class="qa-a">
+          It's a fake first parameter you can add to a function signature — <code style="font-family:'IBM Plex Mono',monospace">function fn(this: SomeType, ...)</code> — to tell TypeScript what type <code style="font-family:'IBM Plex Mono',monospace">this</code> must be when the function is called. TypeScript uses this to type-check <code style="font-family:'IBM Plex Mono',monospace">call/apply/bind</code> usage. The parameter is erased completely in the compiled JavaScript output — it has no runtime effect.
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 12 — Key Takeaways                -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">12 — Key Takeaways</div>
+
+    <div class="summary-card">
+      <h4>JavaScript + TypeScript — What to Lock In</h4>
+      <ul class="summary-list">
+        <li><code style="font-family:'IBM Plex Mono',monospace">this</code> is determined at <strong>call time</strong>, not at write time. Same function, different caller, different <code style="font-family:'IBM Plex Mono',monospace">this</code>.</li>
+        <li><strong>Four rules, in priority order:</strong> new &gt; explicit (call/apply/bind) &gt; implicit (obj.fn()) &gt; default (plain fn()).</li>
+        <li><strong>Default binding</strong> gives <code style="font-family:'IBM Plex Mono',monospace">window</code> in non-strict, <code style="font-family:'IBM Plex Mono',monospace">undefined</code> in strict mode. TypeScript enforces strict mode.</li>
+        <li><strong>Implicit binding loss</strong> is the most common <code style="font-family:'IBM Plex Mono',monospace">this</code> bug — extracting a method or passing it as a callback severs the object connection.</li>
+        <li><strong>call</strong> = run now, individual args. <strong>apply</strong> = run now, array args. <strong>bind</strong> = return new function, this locked permanently.</li>
+        <li><strong>Arrow functions have no own this</strong> — they inherit it lexically from the enclosing scope. call/apply/bind have no effect on their <code style="font-family:'IBM Plex Mono',monospace">this</code>.</li>
+        <li>Use <strong>arrow functions for callbacks inside methods</strong>. Use <strong>method shorthand for methods themselves</strong>. Never mix them up.</li>
+        <li>In TypeScript classes, use <strong>arrow function class fields</strong> for event handlers and callbacks — eliminates all binding loss risk.</li>
+        <li>The TypeScript <strong>this parameter</strong> lets you enforce what type <code style="font-family:'IBM Plex Mono',monospace">this</code> must be — erased at compile time, purely for type safety.</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
