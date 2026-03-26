@@ -61,6 +61,16 @@ export const TOPICS: Topic[] = [
     tags: ['interview', 'practical'],
     description: 'Declarations vs expressions vs arrow functions',
   },
+
+  {
+    id: 'thisKeyword',
+    label: 'this Keyword',
+    file: '/js-ts-react-docs-app/notes/thisKeyword.html',
+    phase: 'Phase 1',
+    phaseColor: '#F0B429',
+    tags: ['interview', 'practical'],
+    description: '"this" in regular functions, arrow functions, methods. call, apply, bind to control it explicitly',
+  },
 ]
 
 export default function App() {
