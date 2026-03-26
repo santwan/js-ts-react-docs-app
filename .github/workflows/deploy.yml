@@ -15,7 +15,8 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npx tsc -b && npx vite build
+      - run: chmod +x node_modules/.bin/vite node_modules/.bin/tsc
+      - run: npm run build
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
