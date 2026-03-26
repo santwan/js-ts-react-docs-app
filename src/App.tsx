@@ -19,7 +19,7 @@ export const TOPICS: Topic[] = [
   {
     id: 'roadmap',
     label: 'JS → React Roadmap',
-    file: '/notes/roadmap.html',
+    file: '/js-ts-react-docs-app/notes/roadmap.html',
     phase: 'Overview',
     phaseColor: '#8B5CF6',
     tags: [],
@@ -28,7 +28,7 @@ export const TOPICS: Topic[] = [
   {
     id: 'variables-types',
     label: 'Variables, Types & Coercion',
-    file: '/notes/variables-types.html',
+    file: '/js-ts-react-docs-app/notes/variables-types.html',
     phase: 'Phase 1',
     phaseColor: '#F0B429',
     tags: ['interview', 'concept'],
@@ -37,7 +37,7 @@ export const TOPICS: Topic[] = [
   {
     id: 'scope',
     label: 'Scope & the Scope Chain',
-    file: '/notes/scope.html',
+    file: '/js-ts-react-docs-app/notes/scope.html',
     phase: 'Phase 1',
     phaseColor: '#F0B429',
     tags: ['interview', 'concept'],
@@ -46,7 +46,7 @@ export const TOPICS: Topic[] = [
   {
     id: 'hoisting',
     label: 'Hoisting',
-    file: '/notes/hoisting.html',
+    file: '/js-ts-react-docs-app/notes/hoisting.html',
     phase: 'Phase 1',
     phaseColor: '#F0B429',
     tags: ['interview', 'concept'],
@@ -55,7 +55,7 @@ export const TOPICS: Topic[] = [
   {
     id: 'functions',
     label: 'Functions — All Forms',
-    file: '/notes/functions.html',
+    file: '/js-ts-react-docs-app/notes/functions.html',
     phase: 'Phase 1',
     phaseColor: '#F0B429',
     tags: ['interview', 'practical'],
