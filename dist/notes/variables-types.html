@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JS + TS Notes — Variables, Types & Type Coercion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Fraunces:ital,wght@0,300;0,700;1,300;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f11;
+    --bg2: #161619;
+    --bg3: #1e1e23;
+    --bg4: #26262d;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8e6df;
+    --text2: #9b9890;
+    --text3: #5e5c57;
+    --js: #F0B429;
+    --js-dim: rgba(240,180,41,0.12);
+    --js-dim2: rgba(240,180,41,0.06);
+    --green: #4ade80;
+    --green-dim: rgba(74,222,128,0.1);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.1);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.1);
+    --purple: #c084fc;
+    --purple-dim: rgba(192,132,252,0.1);
+    --interview: #fbbf24;
+    --interview-dim: rgba(251,191,36,0.08);
+    --ts: #3B82F6;
+    --ts-dim: rgba(59,130,246,0.08);
+    --ts-dim2: rgba(59,130,246,0.04);
+    --ts-border: rgba(59,130,246,0.25);
+    --ts-text: #93C5FD;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.75;
+    font-size: 15px;
+  }
+
+  /* ── Layout ── */
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── Header ── */
+  .header {
+    padding: 3.5rem 0 2.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  .header-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--js);
+    margin-bottom: 0.75rem;
+  }
+
+  .header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(28px, 5vw, 42px);
+    line-height: 1.15;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .header h1 em {
+    font-style: italic;
+    color: var(--js);
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 16px;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    font-size: 11px;
+    font-weight: 400;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .meta-pill.js { border-color: rgba(240,180,41,0.3); color: var(--js); background: var(--js-dim2); }
+  .meta-pill.ts { border-color: var(--ts-border); color: var(--ts-text); background: var(--ts-dim2); }
+
+  /* ── TypeScript concept block ── */
+  .concept.ts-concept::before { background: var(--ts); }
+
+  /* ── TypeScript banner ── */
+  .ts-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--ts-dim);
+    border: 1px solid var(--ts-border);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+  }
+  .ts-banner-icon { font-size: 20px; flex-shrink: 0; }
+  .ts-banner p { font-size: 13.5px; color: var(--ts-text); line-height: 1.6; }
+  .ts-banner p strong { color: #bfdbfe; font-weight: 500; }
+
+  /* ── TS mental model ── */
+  .mental-model.ts-model {
+    background: var(--ts-dim2);
+    border-color: var(--ts-border);
+  }
+  .mental-model.ts-model p { color: #93c5fd; }
+
+  /* ── Section titles ── */
+  .section {
+    margin-bottom: 3.5rem;
+  }
+
+  .section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Concept blocks ── */
+  .concept {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .concept::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--js);
+    border-radius: 3px 0 0 3px;
+    opacity: 0.5;
+  }
+
+  .concept h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.01em;
+  }
+
+  .concept p {
+    color: var(--text2);
+    font-size: 14.5px;
+    line-height: 1.7;
+  }
+
+  .concept p + p { margin-top: 0.6rem; }
+
+  /* ── Mental model callout ── */
+  .mental-model {
+    background: var(--js-dim2);
+    border: 1px solid rgba(240,180,41,0.2);
+    border-radius: 10px;
+    padding: 1.1rem 1.4rem;
+    margin: 1rem 0 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .mental-model-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .mental-model p {
+    color: #d4a836;
+    font-size: 13.5px;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* ── Code blocks ── */
+  pre {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 1rem 0 0;
+    overflow-x: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .code-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+
+  .k { color: #c084fc; } /* keyword */
+  .v { color: #60a5fa; } /* variable/value */
+  .s { color: #86efac; } /* string */
+  .n { color: #fbbf24; } /* number */
+  .c { color: #6b7280; font-style: italic; } /* comment */
+  .fn { color: #f0b429; } /* function name */
+  .op { color: #e879f9; } /* operator */
+  .bool { color: #f97316; } /* boolean */
+  .good { color: #4ade80; } /* good/correct */
+  .bad  { color: #f87171; } /* bad/wrong */
+
+  /* ── Comparison tables ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 1rem;
+  }
+
+  .compare-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+  }
+
+  .compare-card.good-card { border-color: rgba(74,222,128,0.2); background: rgba(74,222,128,0.04); }
+  .compare-card.bad-card  { border-color: rgba(248,113,113,0.2); background: rgba(248,113,113,0.04); }
+
+  .compare-card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .good-card .compare-card-label { color: var(--green); }
+  .bad-card  .compare-card-label { color: var(--red); }
+
+  .compare-card pre { margin: 0; padding: 0; background: none; border: none; font-size: 12.5px; }
+
+  /* ── Interview Q&A ── */
+  .interview-section {
+    background: var(--interview-dim);
+    border: 1px solid rgba(251,191,36,0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+  }
+
+  .interview-header {
+    background: rgba(251,191,36,0.06);
+    padding: 0.65rem 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(251,191,36,0.1);
+  }
+
+  .interview-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: rgba(251,191,36,0.15);
+    color: var(--interview);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .interview-header span {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .qa-item {
+    padding: 1.25rem 1.4rem;
+    border-bottom: 1px solid rgba(251,191,36,0.08);
+  }
+
+  .qa-item:last-child { border-bottom: none; }
+
+  .qa-q {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+    display: flex;
+    gap: 8px;
+  }
+
+  .qa-q::before {
+    content: 'Q';
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--interview);
+    background: rgba(251,191,36,0.12);
+    padding: 1px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    height: fit-content;
+    margin-top: 2px;
+  }
+
+  .qa-a {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    padding-left: 28px;
+  }
+
+  .qa-a strong { color: var(--text); font-weight: 500; }
+
+  /* ── Gotcha / warning ── */
+  .gotcha {
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .gotcha-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+  .gotcha p {
+    font-size: 13.5px;
+    color: #f9a8a8;
+    line-height: 1.6;
+  }
+
+  .gotcha p strong { color: var(--red); }
+
+  /* ── Type table ── */
+  .type-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 13.5px;
+  }
+
+  .type-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    text-align: left;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border2);
+    background: var(--bg3);
+  }
+
+  .type-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .type-table tr:last-child td { border-bottom: none; }
+  .type-table tr:hover td { background: var(--bg3); }
+
+  .type-table td:first-child {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--purple);
+  }
+
+  .type-table td:nth-child(2) { color: var(--text2); font-size: 13px; }
+  .type-table td:nth-child(3) {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--green);
+  }
+
+  .type-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+
+  /* ── Coercion demo ── */
+  .coerce-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 1rem;
+  }
+
+  .coerce-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+  }
+
+  .coerce-expr {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .coerce-result {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--js);
+  }
+
+  .coerce-why {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+
+  .coerce-card.trap { border-color: rgba(248,113,113,0.25); }
+  .coerce-card.trap .coerce-result { color: var(--red); }
+
+  /* ── TDZ visual ── */
+  .tdz-visual {
+    display: flex;
+    gap: 0;
+    margin-top: 1rem;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .tdz-zone {
+    flex: 1;
+    padding: 1rem 1.1rem;
+    text-align: center;
+  }
+
+  .tdz-zone.dead { background: rgba(248,113,113,0.08); }
+  .tdz-zone.alive { background: rgba(74,222,128,0.06); }
+
+  .tdz-zone-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .tdz-zone.dead .tdz-zone-label { color: var(--red); }
+  .tdz-zone.alive .tdz-zone-label { color: var(--green); }
+
+  .tdz-zone p { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+  /* ── Summary card ── */
+  .summary-card {
+    background: var(--bg2);
+    border: 1px solid rgba(240,180,41,0.2);
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1rem;
+  }
+
+  .summary-card h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--js);
+    margin-bottom: 1rem;
+  }
+
+  .summary-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .summary-list li {
+    font-size: 13.5px;
+    color: var(--text2);
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .summary-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--js);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+
+  .summary-list li strong { color: var(--text); font-weight: 500; }
+
+  /* ── Breadcrumb nav ── */
+  .breadcrumb {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    padding: 1.5rem 0 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .breadcrumb span { color: var(--text3); }
+  .breadcrumb .current { color: var(--js); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="breadcrumb">
+    <span>JavaScript Notes</span>
+    <span>›</span>
+    <span>Phase 1 — Foundations</span>
+    <span>›</span>
+    <span class="current">Topic 01</span>
+  </div>
+
+  <header class="header">
+    <div class="header-eyebrow">Phase 1 · Topic 01</div>
+    <h1>Variables, Types<br>&amp; <em>Type Coercion</em></h1>
+    <div class="header-meta">
+      <span class="meta-pill js">JS Core</span>
+      <span class="meta-pill ts">TypeScript</span>
+      <span class="meta-pill">Interview Topic</span>
+      <span class="meta-pill">Concept</span>
+    </div>
+  </header>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 1 — var / let / const             -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">01 — var, let &amp; const</div>
+
+    <div class="concept">
+      <h3>The Core Difference</h3>
+      <p><code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">var</code> is the old way. It has two problems: it's <strong style="color:var(--text)">function-scoped</strong> (not block-scoped) and it gets <strong style="color:var(--text)">hoisted</strong>. These two quirks caused countless bugs, which is why <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">let</code> and <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">const</code> were introduced in ES6 (2015).</p>
+      <p>Use <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">const</code> by default. Only use <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">let</code> when you know the value will be reassigned. Avoid <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">var</code> entirely in modern code.</p>
+
+      <div class="mental-model">
+        <div class="mental-model-icon">💡</div>
+        <p>Think of <code>const</code> as "this binding won't change" — not "this value is frozen". A <code>const</code> object's properties can still be mutated. <code>const</code> just means you can't reassign the variable itself to point to something else.</p>
+      </div>
+    </div>
+
+    <div class="compare-grid">
+      <div style="grid-column: 1 / -1; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+        <table class="type-table" style="margin: 0;">
+          <thead>
+            <tr>
+              <th>Keyword</th>
+              <th>Scope</th>
+              <th>Re-assignable</th>
+              <th>Hoisted</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>var</td>
+              <td style="color:var(--red); font-size:13px">Function scope</td>
+              <td style="color:var(--green); font-size:13px">Yes</td>
+              <td style="color:var(--red); font-size:13px">Yes (as undefined)</td>
+            </tr>
+            <tr>
+              <td>let</td>
+              <td style="color:var(--green); font-size:13px">Block scope</td>
+              <td style="color:var(--green); font-size:13px">Yes</td>
+              <td style="color:var(--red); font-size:13px">Yes (TDZ — unusable)</td>
+            </tr>
+            <tr>
+              <td>const</td>
+              <td style="color:var(--green); font-size:13px">Block scope</td>
+              <td style="color:var(--red); font-size:13px">No</td>
+              <td style="color:var(--red); font-size:13px">Yes (TDZ — unusable)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="compare-grid" style="margin-top: 1rem;">
+      <div class="compare-card bad-card">
+        <div class="compare-card-label">⚠ var — the old, buggy way</div>
+        <pre><span class="k">var</span> <span class="v">x</span> <span class="op">=</span> <span class="n">10</span>;
+<span class="k">if</span> (<span class="bool">true</span>) {
+  <span class="k">var</span> <span class="v">x</span> <span class="op">=</span> <span class="n">99</span>; <span class="c">// same x!</span>
+}
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="v">x</span>); <span class="c">// 99 😱</span></pre>
+      </div>
+      <div class="compare-card good-card">
+        <div class="compare-card-label">✓ let — block scoped</div>
+        <pre><span class="k">let</span> <span class="v">x</span> <span class="op">=</span> <span class="n">10</span>;
+<span class="k">if</span> (<span class="bool">true</span>) {
+  <span class="k">let</span> <span class="v">x</span> <span class="op">=</span> <span class="n">99</span>; <span class="c">// different x</span>
+}
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="v">x</span>); <span class="c">// 10 ✓</span></pre>
+      </div>
+    </div>
+
+    <div class="gotcha" style="margin-top: 1rem;">
+      <div class="gotcha-icon">⚡</div>
+      <p><strong>const doesn't mean immutable.</strong> <code style="font-family:'IBM Plex Mono',monospace; color:#fca5a5">const user = {name: "Arjun"}</code> — you can still do <code style="font-family:'IBM Plex Mono',monospace; color:#fca5a5">user.name = "Raj"</code>. What you can't do is <code style="font-family:'IBM Plex Mono',monospace; color:#fca5a5">user = {}</code> — that would be reassigning the variable itself.</p>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 2 — Primitive vs Reference Types  -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">02 — Primitive vs Reference Types</div>
+
+    <div class="concept">
+      <h3>The Two Worlds of JavaScript Values</h3>
+      <p>Every value in JS is either a <strong style="color:var(--text)">primitive</strong> or a <strong style="color:var(--text)">reference type</strong>. This distinction explains one of the most confusing bugs beginners hit — why two objects that look the same don't equal each other.</p>
+
+      <div class="mental-model">
+        <div class="mental-model-icon">💡</div>
+        <p><strong>Primitives are copied by value</strong> — like photocopying a document. Each copy is independent.<br><strong>Objects are copied by reference</strong> — like sharing a Google Doc link. Everyone points to the same thing.</p>
+      </div>
+    </div>
+
+    <div class="type-wrap">
+      <table class="type-table" style="margin: 0;">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>string</td>
+            <td style="color:var(--text2)">Text — immutable sequence of characters</td>
+            <td>"hello", 'world'</td>
+          </tr>
+          <tr>
+            <td>number</td>
+            <td style="color:var(--text2)">All numbers (integers + floats), also NaN, Infinity</td>
+            <td>42, 3.14, NaN</td>
+          </tr>
+          <tr>
+            <td>boolean</td>
+            <td style="color:var(--text2)">True or false, nothing else</td>
+            <td>true, false</td>
+          </tr>
+          <tr>
+            <td>null</td>
+            <td style="color:var(--text2)">Intentional absence of a value — you set this</td>
+            <td>null</td>
+          </tr>
+          <tr>
+            <td>undefined</td>
+            <td style="color:var(--text2)">Variable declared but not assigned — JS sets this</td>
+            <td>undefined</td>
+          </tr>
+          <tr>
+            <td>symbol</td>
+            <td style="color:var(--text2)">Unique identifier — rarely used in everyday code</td>
+            <td>Symbol('id')</td>
+          </tr>
+          <tr>
+            <td>bigint</td>
+            <td style="color:var(--text2)">Integers larger than Number can safely hold</td>
+            <td>9007199254740993n</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="concept" style="margin-top: 1.25rem;">
+      <h3>Reference Types (Objects)</h3>
+      <p>Everything else — <code style="color:var(--purple); font-family:'IBM Plex Mono',monospace">{}</code> objects, <code style="color:var(--purple); font-family:'IBM Plex Mono',monospace">[]</code> arrays, functions, dates — is an object. They are stored as a <em>reference</em> (a memory address), not as the actual value.</p>
+
+      <pre><span class="c">// Primitives — copied by value</span>
+<span class="k">let</span> <span class="v">a</span> <span class="op">=</span> <span class="n">5</span>;
+<span class="k">let</span> <span class="v">b</span> <span class="op">=</span> <span class="v">a</span>;     <span class="c">// b gets a COPY of 5</span>
+<span class="v">b</span> <span class="op">=</span> <span class="n">10</span>;
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="v">a</span>); <span class="c">// 5 — unchanged</span>
+
+<span class="c">// Objects — copied by reference</span>
+<span class="k">let</span> <span class="v">user1</span> <span class="op">=</span> { <span class="v">name</span>: <span class="s">"Arjun"</span> };
+<span class="k">let</span> <span class="v">user2</span> <span class="op">=</span> <span class="v">user1</span>;  <span class="c">// user2 points to SAME object</span>
+<span class="v">user2</span>.<span class="v">name</span> <span class="op">=</span> <span class="s">"Raj"</span>;
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="v">user1</span>.<span class="v">name</span>); <span class="c">// "Raj" — both changed! 😱</span></pre>
+
+      <div class="gotcha">
+        <div class="gotcha-icon">⚡</div>
+        <p><strong>Why <code style="font-family:'IBM Plex Mono',monospace; color:#fca5a5">{} !== {}</code> in JavaScript.</strong> Two object literals are two different objects in memory, even if they look identical. <code style="font-family:'IBM Plex Mono',monospace; color:#fca5a5">{} === {}</code> is always <code style="font-family:'IBM Plex Mono',monospace; color:#fca5a5">false</code> because JS compares references, not contents.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 3 — null vs undefined             -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">03 — null vs undefined</div>
+
+    <div class="concept">
+      <h3>They're Both "Nothing" — But Different Intent</h3>
+      <p><strong style="color:var(--text)">undefined</strong> means "this variable exists but hasn't been given a value yet." JavaScript sets this automatically — it's the default state of declared variables, missing function arguments, and missing object properties.</p>
+      <p><strong style="color:var(--text)">null</strong> means "this variable intentionally has no value." A developer sets this on purpose — it's a deliberate signal that something is empty or absent.</p>
+
+      <div class="mental-model">
+        <div class="mental-model-icon">💡</div>
+        <p><code>undefined</code> = "I haven't packed my bag yet" (JavaScript's default).<br><code>null</code> = "I intentionally left my bag empty" (developer's choice).</p>
+      </div>
+
+      <pre><span class="k">let</span> <span class="v">name</span>;                   <span class="c">// undefined — JS set this</span>
+<span class="k">let</span> <span class="v">user</span> <span class="op">=</span> <span class="bool">null</span>;            <span class="c">// null — YOU set this on purpose</span>
+
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="k">typeof</span> <span class="v">name</span>);   <span class="c">// "undefined"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="k">typeof</span> <span class="v">user</span>);   <span class="c">// "object" ← famous JS bug!</span>
+
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="v">name</span> <span class="op">==</span> <span class="v">user</span>);  <span class="c">// true  (loose — both "nullish")</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="v">name</span> <span class="op">===</span> <span class="v">user</span>); <span class="c">// false (strict — different types)</span></pre>
+
+      <div class="gotcha">
+        <div class="gotcha-icon">⚡</div>
+        <p><strong>typeof null === "object"</strong> is a famous, unfixable JavaScript bug that dates back to 1995. It was a mistake in the original implementation. Always remember this — interviewers love it.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 4 — typeof                        -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">04 — typeof operator</div>
+
+    <div class="concept">
+      <h3>Checking a Value's Type at Runtime</h3>
+      <p><code style="color:var(--purple); font-family:'IBM Plex Mono',monospace">typeof</code> returns a string telling you the type of a value. It's your go-to for runtime type checking — but it has quirks you must know.</p>
+
+      <pre><span class="fn">console</span>.<span class="fn">log</span>(<span class="k">typeof</span> <span class="s">"hello"</span>);     <span class="c">// "string"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="k">typeof</span> <span class="n">42</span>);          <span class="c">// "number"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="k">typeof</span> <span class="bool">true</span>);         <span class="c">// "boolean"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="k">typeof</span> <span class="v">undefined</span>);   <span class="c">// "undefined"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="k">typeof</span> <span class="k">function</span>(){}); <span class="c">// "function"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="k">typeof</span> {});           <span class="c">// "object"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="k">typeof</span> []);           <span class="c">// "object" ← arrays too!</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="k">typeof</span> <span class="bool">null</span>);         <span class="c">// "object" ← the famous bug</span></pre>
+
+      <div class="mental-model">
+        <div class="mental-model-icon">💡</div>
+        <p>To check if something is truly an array, use <code>Array.isArray(value)</code> — never rely on <code>typeof</code> for arrays. To check for <code>null</code> specifically, use <code>value === null</code>.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 5 — Type Coercion                 -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">05 — Type Coercion (the tricky part)</div>
+
+    <div class="concept">
+      <h3>JavaScript Converting Types Behind Your Back</h3>
+      <p>Type coercion is JavaScript <em>automatically converting</em> a value from one type to another when an operation doesn't match. This is one of the most asked-about topics in JS interviews — and the source of the most notorious bugs.</p>
+      <p>There are two kinds: <strong style="color:var(--text)">implicit coercion</strong> (JS does it automatically) and <strong style="color:var(--text)">explicit coercion</strong> (you do it on purpose with <code style="font-family:'IBM Plex Mono',monospace; color:var(--purple)">Number()</code>, <code style="font-family:'IBM Plex Mono',monospace; color:var(--purple)">String()</code>, etc.).</p>
+
+      <div class="mental-model">
+        <div class="mental-model-icon">💡</div>
+        <p>When JS sees a mismatch (like adding a number to a string), it doesn't throw an error — it silently converts one value to match the other. The rules for <em>which direction</em> it converts are what you need to memorize.</p>
+      </div>
+    </div>
+
+    <div class="concept">
+      <h3>The + Operator — The Most Confusing One</h3>
+      <p>The <code style="font-family:'IBM Plex Mono',monospace; color:var(--purple)">+</code> operator has dual personality: it's both <strong style="color:var(--text)">addition</strong> (for numbers) and <strong style="color:var(--text)">concatenation</strong> (for strings). If either operand is a string, JS converts the other to a string too.</p>
+
+      <pre><span class="c">// String + anything = string concatenation</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="s">"5"</span> <span class="op">+</span> <span class="n">3</span>);      <span class="c">// "53" ← 3 becomes "3"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="n">3</span> <span class="op">+</span> <span class="s">"5"</span>);      <span class="c">// "35" ← 3 becomes "3"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="s">"5"</span> <span class="op">+</span> <span class="n">3</span> <span class="op">+</span> <span class="n">2</span>);  <span class="c">// "532" ← left-to-right</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="n">3</span> <span class="op">+</span> <span class="n">2</span> <span class="op">+</span> <span class="s">"5"</span>);  <span class="c">// "55" ← 3+2=5, then "5"+"5"</span>
+
+<span class="c">// Other operators always try to convert to numbers</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="s">"5"</span> <span class="op">-</span> <span class="n">3</span>);      <span class="c">// 2 ← "5" becomes 5</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="s">"5"</span> <span class="op">*</span> <span class="n">2</span>);      <span class="c">// 10</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="s">"5"</span> <span class="op">/</span> <span class="n">2</span>);      <span class="c">// 2.5</span></pre>
+    </div>
+
+    <div class="concept">
+      <h3>Falsy &amp; Truthy Values</h3>
+      <p>In JS, every value is either <strong style="color:var(--text)">truthy</strong> or <strong style="color:var(--text)">falsy</strong> — it behaves as true or false when used in a boolean context (like an <code style="font-family:'IBM Plex Mono',monospace; color:var(--purple)">if</code> statement). There are only <strong style="color:var(--js)">6 falsy values</strong> — everything else is truthy.</p>
+
+      <pre><span class="c">// The 6 falsy values — memorize these</span>
+<span class="k">if</span> (<span class="bool">false</span>)     {} <span class="c">// false</span>
+<span class="k">if</span> (<span class="n">0</span>)         {} <span class="c">// 0</span>
+<span class="k">if</span> (<span class="s">""</span>)        {} <span class="c">// empty string</span>
+<span class="k">if</span> (<span class="bool">null</span>)      {} <span class="c">// null</span>
+<span class="k">if</span> (<span class="v">undefined</span>) {} <span class="c">// undefined</span>
+<span class="k">if</span> (<span class="v">NaN</span>)       {} <span class="c">// NaN</span>
+
+<span class="c">// Everything else is truthy — including:</span>
+<span class="k">if</span> (<span class="s">"0"</span>)  {} <span class="c">// truthy! non-empty string</span>
+<span class="k">if</span> ([])   {} <span class="c">// truthy! empty array</span>
+<span class="k">if</span> ({})   {} <span class="c">// truthy! empty object</span></pre>
+
+      <div class="gotcha">
+        <div class="gotcha-icon">⚡</div>
+        <p><strong>"0" is truthy but 0 is falsy.</strong> This trips people up constantly. A string with a zero character inside it is not empty — it's a string with content, so it's truthy.</p>
+      </div>
+    </div>
+
+    <div class="concept">
+      <h3>Notable Coercion Traps to Know Cold</h3>
+
+      <div class="coerce-grid">
+        <div class="coerce-card trap">
+          <div class="coerce-expr">"" + 0</div>
+          <div class="coerce-result">→ "0"</div>
+          <div class="coerce-why">Empty string + number → string concat</div>
+        </div>
+        <div class="coerce-card trap">
+          <div class="coerce-expr">[] + []</div>
+          <div class="coerce-result">→ ""</div>
+          <div class="coerce-why">Both arrays → strings → "" + "" = ""</div>
+        </div>
+        <div class="coerce-card trap">
+          <div class="coerce-expr">[] + {}</div>
+          <div class="coerce-result">→ "[object Object]"</div>
+          <div class="coerce-why">[] → "", {} → "[object Object]"</div>
+        </div>
+        <div class="coerce-card trap">
+          <div class="coerce-expr">+"3"</div>
+          <div class="coerce-result">→ 3</div>
+          <div class="coerce-why">Unary + converts string to number</div>
+        </div>
+        <div class="coerce-card trap">
+          <div class="coerce-expr">+""</div>
+          <div class="coerce-result">→ 0</div>
+          <div class="coerce-why">Empty string coerces to 0</div>
+        </div>
+        <div class="coerce-card trap">
+          <div class="coerce-expr">+null</div>
+          <div class="coerce-result">→ 0</div>
+          <div class="coerce-why">null coerces to 0 in numeric context</div>
+        </div>
+        <div class="coerce-card trap">
+          <div class="coerce-expr">+undefined</div>
+          <div class="coerce-result">→ NaN</div>
+          <div class="coerce-why">undefined has no numeric equivalent</div>
+        </div>
+        <div class="coerce-card trap">
+          <div class="coerce-expr">+true / +false</div>
+          <div class="coerce-result">→ 1 / 0</div>
+          <div class="coerce-why">Booleans are 1 and 0 in number context</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 6 — == vs ===                     -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">06 — == vs === (Loose vs Strict Equality)</div>
+
+    <div class="concept">
+      <h3>Always Use === Unless You Have a Good Reason Not To</h3>
+      <p><strong style="color:var(--text)">===</strong> (strict equality) checks both <em>value</em> and <em>type</em>. No coercion happens. This is what you should use by default.</p>
+      <p><strong style="color:var(--text)">==</strong> (loose equality) converts both values to the same type before comparing. The conversion rules are complex enough to be a dedicated interview question.</p>
+
+      <pre><span class="c">// === never coerces — simple and predictable</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="n">5</span> <span class="op">===</span> <span class="s">"5"</span>);    <span class="c">// false — different types</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="n">0</span> <span class="op">===</span> <span class="bool">false</span>);  <span class="c">// false — different types</span>
+
+<span class="c">// == coerces — surprising results</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="n">5</span> <span class="op">==</span> <span class="s">"5"</span>);     <span class="c">// true  ← "5" converted to 5</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="n">0</span> <span class="op">==</span> <span class="bool">false</span>);   <span class="c">// true  ← false converted to 0</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="s">""</span> <span class="op">==</span> <span class="bool">false</span>);  <span class="c">// true  ← both become 0</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="bool">null</span> <span class="op">==</span> <span class="v">undefined</span>); <span class="c">// true (special rule)</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="bool">null</span> <span class="op">==</span> <span class="n">0</span>);    <span class="c">// false (null only == undefined)</span></pre>
+
+      <div class="mental-model">
+        <div class="mental-model-icon">💡</div>
+        <p>The one legitimate use of <code>==</code> is checking for both null and undefined at once: <code>if (value == null)</code> catches both <code>null</code> and <code>undefined</code> — which is sometimes exactly what you want.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 7 — Interview Q&A                 -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">07 — Interview Q&amp;A</div>
+
+    <div class="interview-section">
+      <div class="interview-header">
+        <span class="interview-badge">Interview</span>
+        <span>Questions you must be able to answer out loud</span>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What's the difference between var, let, and const?</div>
+        <div class="qa-a">
+          <strong>var</strong> is function-scoped and gets hoisted — declared before they're assigned, with a value of <code style="font-family:'IBM Plex Mono',monospace">undefined</code>. <strong>let</strong> and <strong>const</strong> are block-scoped and also hoisted, but enter a "Temporal Dead Zone" — you can't access them before their declaration. The difference between <strong>let</strong> and <strong>const</strong> is that <strong>const</strong> bindings can't be reassigned. Prefer <strong>const</strong> by default, use <strong>let</strong> when you need to reassign, avoid <strong>var</strong>.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What is type coercion and can you give an example?</div>
+        <div class="qa-a">
+          Type coercion is JavaScript automatically converting a value from one type to another during an operation. For example, <code style="font-family:'IBM Plex Mono',monospace">"5" + 3</code> gives <code style="font-family:'IBM Plex Mono',monospace">"53"</code> because the <code style="font-family:'IBM Plex Mono',monospace">+</code> operator sees a string and converts the number to a string. But <code style="font-family:'IBM Plex Mono',monospace">"5" - 3</code> gives <code style="font-family:'IBM Plex Mono',monospace">2</code> because <code style="font-family:'IBM Plex Mono',monospace">-</code> doesn't do concatenation, so it converts the string to a number instead.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What's the difference between == and ===?</div>
+        <div class="qa-a">
+          <strong>===</strong> (strict equality) compares both value and type with no conversion. <strong>==</strong> (loose equality) performs type coercion before comparing. I always use <strong>===</strong> unless I specifically want to check for both <code style="font-family:'IBM Plex Mono',monospace">null</code> and <code style="font-family:'IBM Plex Mono',monospace">undefined</code> at once with <code style="font-family:'IBM Plex Mono',monospace">value == null</code>.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What's the difference between null and undefined?</div>
+        <div class="qa-a">
+          <strong>undefined</strong> means a variable has been declared but not given a value — JavaScript assigns this automatically. <strong>null</strong> is an intentional assignment by the developer to signal "no value here." Both are falsy, and <code style="font-family:'IBM Plex Mono',monospace">null == undefined</code> is <code style="font-family:'IBM Plex Mono',monospace">true</code>, but <code style="font-family:'IBM Plex Mono',monospace">null === undefined</code> is <code style="font-family:'IBM Plex Mono',monospace">false</code>.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What does typeof null return and why?</div>
+        <div class="qa-a">
+          It returns <code style="font-family:'IBM Plex Mono',monospace">"object"</code> — which is a <strong>bug</strong> in JavaScript dating back to 1995. In the original implementation, values were stored with a type tag, and the null pointer was stored as all zeros — which matched the object type tag. It was never fixed because doing so would break too much existing code.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What are the falsy values in JavaScript?</div>
+        <div class="qa-a">
+          There are exactly 6: <code style="font-family:'IBM Plex Mono',monospace">false</code>, <code style="font-family:'IBM Plex Mono',monospace">0</code>, <code style="font-family:'IBM Plex Mono',monospace">""</code> (empty string), <code style="font-family:'IBM Plex Mono',monospace">null</code>, <code style="font-family:'IBM Plex Mono',monospace">undefined</code>, and <code style="font-family:'IBM Plex Mono',monospace">NaN</code>. Everything else — including <code style="font-family:'IBM Plex Mono',monospace">"0"</code>, <code style="font-family:'IBM Plex Mono',monospace">[]</code>, and <code style="font-family:'IBM Plex Mono',monospace">{}</code> — is truthy.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What's the difference between primitive and reference types?</div>
+        <div class="qa-a">
+          Primitives (string, number, boolean, null, undefined, symbol, bigint) are stored and copied <strong>by value</strong> — each variable holds its own copy. Objects, arrays, and functions are stored <strong>by reference</strong> — variables hold a pointer to the same location in memory. That's why assigning an object to a new variable and mutating it affects both variables.
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 8 — Key Takeaways (JS)            -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">08 — Key Takeaways (JavaScript)</div>
+
+    <div class="summary-card">
+      <h4>What to Remember from This Topic</h4>
+      <ul class="summary-list">
+        <li>Use <strong>const by default</strong>, let when you must reassign, never var in modern code.</li>
+        <li><strong>const doesn't mean immutable</strong> — it means the binding can't be reassigned. Object properties can still change.</li>
+        <li>Primitives are copied <strong>by value</strong>, objects are copied <strong>by reference</strong>.</li>
+        <li><strong>typeof null === "object"</strong> is a historic bug — always check null with strict equality: <code style="font-family:'IBM Plex Mono',monospace">value === null</code>.</li>
+        <li>undefined = JS didn't assign a value. null = you intentionally assigned "no value".</li>
+        <li>The <strong>+ operator</strong> is both addition and string concatenation — if either side is a string, it concatenates.</li>
+        <li>Only <strong>6 falsy values</strong>: false, 0, "", null, undefined, NaN. Everything else is truthy — including [] and {}.</li>
+        <li>Always use <strong>===</strong> unless you specifically need the null/undefined shorthand with ==.</li>
+      </ul>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!--  TYPESCRIPT SECTION BEGINS                                     -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+
+  <div class="ts-banner">
+    <div class="ts-banner-icon">🔷</div>
+    <p><strong>TypeScript Layer</strong> — Everything below maps directly to what you just learned. TypeScript doesn't replace your JS knowledge — it adds a type system on top of it. Same variables, same types, same coercion rules — but now the compiler catches your mistakes before they run.</p>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 09 — Type Annotations             -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">09 — Type Annotations</div>
+
+    <div class="concept ts-concept">
+      <h3>Telling TypeScript What Type a Variable Holds</h3>
+      <p>In JavaScript, you declare a variable and JS figures out the type at runtime. In TypeScript, you can <strong style="color:var(--text)">annotate</strong> a variable to tell the compiler exactly what type it should be — and it will error if you ever put the wrong thing in it.</p>
+      <p>The syntax is a colon after the variable name: <code style="color:var(--ts-text);font-family:'IBM Plex Mono',monospace">let name: string = "Arjun"</code>. Simple.</p>
+
+      <div class="mental-model ts-model">
+        <div class="mental-model-icon">💡</div>
+        <p>Think of a type annotation as a <strong>label on a box</strong>. If the box says "strings only", TypeScript will refuse to let you put a number in it — at compile time, before your code ever runs.</p>
+      </div>
+
+      <pre><span class="c">// JavaScript — no annotations, no safety</span>
+<span class="k">let</span> <span class="v">age</span> <span class="op">=</span> <span class="n">25</span>;
+<span class="v">age</span> <span class="op">=</span> <span class="s">"twenty five"</span>; <span class="c">// JS allows this — silent bug</span>
+
+<span class="c">// TypeScript — annotated, compiler catches mistakes</span>
+<span class="k">let</span> <span class="v">age</span>: <span class="fn">number</span> <span class="op">=</span> <span class="n">25</span>;
+<span class="v">age</span> <span class="op">=</span> <span class="s">"twenty five"</span>; <span class="c">// TS Error: Type 'string' not assignable to type 'number'</span>
+
+<span class="c">// Annotating all primitive types</span>
+<span class="k">let</span> <span class="v">username</span>: <span class="fn">string</span>  <span class="op">=</span> <span class="s">"Arjun"</span>;
+<span class="k">let</span> <span class="v">score</span>:    <span class="fn">number</span>  <span class="op">=</span> <span class="n">100</span>;
+<span class="k">let</span> <span class="v">isLoggedIn</span>: <span class="fn">boolean</span> <span class="op">=</span> <span class="bool">true</span>;
+<span class="k">let</span> <span class="v">nothing</span>:  <span class="fn">null</span>    <span class="op">=</span> <span class="bool">null</span>;
+<span class="k">let</span> <span class="v">missing</span>:  <span class="fn">undefined</span> <span class="op">=</span> <span class="v">undefined</span>;</pre>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 10 — Type Inference               -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">10 — Type Inference</div>
+
+    <div class="concept ts-concept">
+      <h3>TypeScript is Smart — It Often Infers Types For You</h3>
+      <p>You don't have to annotate everything. When you declare a variable <em>and</em> assign it at the same time, TypeScript <strong style="color:var(--text)">infers</strong> the type automatically from the value. This keeps your code clean while still being fully type-safe.</p>
+
+      <div class="mental-model ts-model">
+        <div class="mental-model-icon">💡</div>
+        <p>Inference rule: <strong>if you assign at declaration, TS infers — you don't need to annotate.</strong> Only annotate when you declare without assigning, or when TS infers the wrong type.</p>
+      </div>
+
+      <pre><span class="c">// TS infers these — no annotation needed</span>
+<span class="k">let</span> <span class="v">name</span>    <span class="op">=</span> <span class="s">"Arjun"</span>;  <span class="c">// inferred: string</span>
+<span class="k">let</span> <span class="v">age</span>     <span class="op">=</span> <span class="n">25</span>;       <span class="c">// inferred: number</span>
+<span class="k">let</span> <span class="v">active</span>  <span class="op">=</span> <span class="bool">true</span>;     <span class="c">// inferred: boolean</span>
+
+<span class="c">// Now they're still protected — TS knows the type</span>
+<span class="v">name</span> <span class="op">=</span> <span class="n">42</span>; <span class="c">// Error: Type 'number' not assignable to type 'string'</span>
+
+<span class="c">// When you MUST annotate — declaring without assigning</span>
+<span class="k">let</span> <span class="v">result</span>: <span class="fn">string</span>;        <span class="c">// no value yet — TS needs the annotation</span>
+<span class="v">result</span> <span class="op">=</span> <span class="s">"done"</span>;           <span class="c">// ✓ fine</span>
+<span class="v">result</span> <span class="op">=</span> <span class="n">99</span>;               <span class="c">// Error — protected by the annotation</span>
+
+<span class="c">// const infers a literal type — more specific than you might expect</span>
+<span class="k">const</span> <span class="v">status</span> <span class="op">=</span> <span class="s">"active"</span>;  <span class="c">// inferred: "active" (not just string)</span>
+<span class="k">let</span>   <span class="v">status2</span> <span class="op">=</span> <span class="s">"active"</span>; <span class="c">// inferred: string (wider — can change)</span></pre>
+
+      <div class="gotcha" style="margin-top:1rem;">
+        <div class="gotcha-icon">⚡</div>
+        <p><strong>const gives you a literal type, let gives you a wider type.</strong> <code style="font-family:'IBM Plex Mono',monospace;color:#fca5a5">const x = "hello"</code> — TypeScript infers the type as the literal <code style="font-family:'IBM Plex Mono',monospace;color:#fca5a5">"hello"</code>, not just <code style="font-family:'IBM Plex Mono',monospace;color:#fca5a5">string</code>. This matters a lot when working with union types later.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 11 — TS Types for JS Primitives   -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">11 — TypeScript Types for Every JS Primitive</div>
+
+    <div class="concept ts-concept">
+      <h3>Every JS Primitive Has a Direct TS Type</h3>
+      <p>All 7 JavaScript primitives you learned map directly to TypeScript types. Plus TypeScript adds some of its own — <code style="color:var(--ts-text);font-family:'IBM Plex Mono',monospace">any</code>, <code style="color:var(--ts-text);font-family:'IBM Plex Mono',monospace">unknown</code>, <code style="color:var(--ts-text);font-family:'IBM Plex Mono',monospace">never</code>, and <code style="color:var(--ts-text);font-family:'IBM Plex Mono',monospace">void</code> — that describe things JS has no syntax for.</p>
+    </div>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.25rem;">
+      <table class="type-table" style="margin:0;">
+        <thead>
+          <tr>
+            <th>TS Type</th>
+            <th>What it means</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>string</td>
+            <td style="color:var(--text2);font-size:13px">Any text value</td>
+            <td>"hello", 'world', `template`</td>
+          </tr>
+          <tr>
+            <td>number</td>
+            <td style="color:var(--text2);font-size:13px">Any numeric value — int, float, NaN, Infinity</td>
+            <td>42, 3.14, NaN</td>
+          </tr>
+          <tr>
+            <td>boolean</td>
+            <td style="color:var(--text2);font-size:13px">true or false, nothing else</td>
+            <td>true, false</td>
+          </tr>
+          <tr>
+            <td>null</td>
+            <td style="color:var(--text2);font-size:13px">Intentional absence — you set this</td>
+            <td>null</td>
+          </tr>
+          <tr>
+            <td>undefined</td>
+            <td style="color:var(--text2);font-size:13px">Unassigned — JS or you set this</td>
+            <td>undefined</td>
+          </tr>
+          <tr>
+            <td>symbol</td>
+            <td style="color:var(--text2);font-size:13px">Unique identifier</td>
+            <td>Symbol('id')</td>
+          </tr>
+          <tr>
+            <td>bigint</td>
+            <td style="color:var(--text2);font-size:13px">Very large integers</td>
+            <td>9007199254740993n</td>
+          </tr>
+          <tr>
+            <td style="color:var(--ts-text)">any</td>
+            <td style="color:var(--red);font-size:13px">Opt out of type checking — avoid this</td>
+            <td>let x: any = anything</td>
+          </tr>
+          <tr>
+            <td style="color:var(--ts-text)">unknown</td>
+            <td style="color:var(--text2);font-size:13px">Like any, but safe — must check type before using</td>
+            <td>let x: unknown = getData()</td>
+          </tr>
+          <tr>
+            <td style="color:var(--ts-text)">void</td>
+            <td style="color:var(--text2);font-size:13px">A function that returns nothing</td>
+            <td>function log(): void {}</td>
+          </tr>
+          <tr>
+            <td style="color:var(--ts-text)">never</td>
+            <td style="color:var(--text2);font-size:13px">A value that can never exist — functions that always throw</td>
+            <td>function fail(): never { throw ... }</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="concept ts-concept">
+      <h3>any vs unknown — Know the Difference Cold</h3>
+      <p><code style="color:var(--ts-text);font-family:'IBM Plex Mono',monospace">any</code> turns off all type checking for that variable — it's an escape hatch and usually a mistake. <code style="color:var(--ts-text);font-family:'IBM Plex Mono',monospace">unknown</code> is the safe version: you can assign anything to it, but TypeScript forces you to check what type it actually is before you use it.</p>
+
+      <pre><span class="c">// any — unsafe, TypeScript trusts you blindly</span>
+<span class="k">let</span> <span class="v">data</span>: <span class="fn">any</span> <span class="op">=</span> <span class="s">"hello"</span>;
+<span class="v">data</span>.<span class="fn">toUpperCase</span>();  <span class="c">// TS allows this — no check</span>
+<span class="v">data</span> <span class="op">=</span> <span class="n">42</span>;
+<span class="v">data</span>.<span class="fn">toUpperCase</span>();  <span class="c">// runtime crash — TS didn't warn you!</span>
+
+<span class="c">// unknown — safe, TypeScript makes you prove the type first</span>
+<span class="k">let</span> <span class="v">input</span>: <span class="fn">unknown</span> <span class="op">=</span> <span class="fn">getUserInput</span>();
+<span class="v">input</span>.<span class="fn">toUpperCase</span>();  <span class="c">// Error: Object is of type 'unknown'</span>
+
+<span class="k">if</span> (<span class="k">typeof</span> <span class="v">input</span> <span class="op">===</span> <span class="s">"string"</span>) {
+  <span class="v">input</span>.<span class="fn">toUpperCase</span>(); <span class="c">// ✓ now TS knows it's a string</span>
+}</pre>
+
+      <div class="mental-model ts-model">
+        <div class="mental-model-icon">💡</div>
+        <p>Rule of thumb: <strong>never use <code>any</code></strong> unless you're migrating old JS code and absolutely have to. Use <code>unknown</code> when you genuinely don't know the type yet. It forces you to be intentional — which is the whole point of TypeScript.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 12 — Typing null & undefined      -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">12 — null & undefined in TypeScript</div>
+
+    <div class="concept ts-concept">
+      <h3>strictNullChecks — The Most Important TS Setting</h3>
+      <p>By default, TypeScript lets you assign <code style="color:var(--ts-text);font-family:'IBM Plex Mono',monospace">null</code> or <code style="color:var(--ts-text);font-family:'IBM Plex Mono',monospace">undefined</code> to any variable. But with <code style="color:var(--ts-text);font-family:'IBM Plex Mono',monospace">strictNullChecks: true</code> in your <code style="font-family:'IBM Plex Mono',monospace;color:var(--text2)">tsconfig.json</code> — which is the standard in all real projects — null and undefined are their own distinct types and must be handled explicitly.</p>
+
+      <div class="mental-model ts-model">
+        <div class="mental-model-icon">💡</div>
+        <p>With <code>strictNullChecks</code> on, TypeScript forces you to deal with "this might be null" before you can use a value. This catches an entire class of runtime errors — the infamous "Cannot read properties of null" error that haunts every JS developer.</p>
+      </div>
+
+      <pre><span class="c">// Without strictNullChecks (bad, avoid this)</span>
+<span class="k">let</span> <span class="v">name</span>: <span class="fn">string</span> <span class="op">=</span> <span class="bool">null</span>;  <span class="c">// TS allows it — dangerous</span>
+
+<span class="c">// With strictNullChecks: true (always use this)</span>
+<span class="k">let</span> <span class="v">name</span>: <span class="fn">string</span> <span class="op">=</span> <span class="bool">null</span>;  <span class="c">// Error: null not assignable to string</span>
+
+<span class="c">// To allow null — use a union type (covered in Topic 12)</span>
+<span class="k">let</span> <span class="v">name</span>: <span class="fn">string</span> <span class="op">|</span> <span class="fn">null</span> <span class="op">=</span> <span class="bool">null</span>;   <span class="c">// ✓ explicit — you said it can be null</span>
+<span class="k">let</span> <span class="v">age</span>:  <span class="fn">number</span> <span class="op">|</span> <span class="fn">undefined</span>;     <span class="c">// ✓ declared but may not have a value yet</span>
+
+<span class="c">// Now TS makes you check before using</span>
+<span class="k">if</span> (<span class="v">name</span> <span class="op">!==</span> <span class="bool">null</span>) {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="v">name</span>.<span class="fn">toUpperCase</span>()); <span class="c">// ✓ safe — TS knows it's a string here</span>
+}
+
+<span class="c">// Optional chaining — short way to handle null/undefined</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="v">name</span><span class="op">?.</span><span class="fn">toUpperCase</span>()); <span class="c">// returns undefined if name is null</span>
+
+<span class="c">// Non-null assertion — tells TS "trust me, it's not null"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="v">name</span><span class="op">!</span>.<span class="fn">toUpperCase</span>()); <span class="c">// use sparingly — bypasses the check</span></pre>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 13 — Typing Objects & const       -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">13 — Typing Objects & const Mutation</div>
+
+    <div class="concept ts-concept">
+      <h3>TypeScript Knows const Objects Are Still Mutable</h3>
+      <p>Remember how <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">const</code> doesn't mean immutable in JS — you can still mutate the object's properties? TypeScript knows this too. It allows mutation of <code style="color:var(--purple);font-family:'IBM Plex Mono',monospace">const</code> object properties by default, but gives you tools to actually enforce immutability when you need it.</p>
+
+      <pre><span class="c">// TypeScript infers the object's shape as a type</span>
+<span class="k">const</span> <span class="v">user</span> <span class="op">=</span> {
+  <span class="v">name</span>: <span class="s">"Arjun"</span>,  <span class="c">// inferred: string</span>
+  <span class="v">age</span>: <span class="n">25</span>         <span class="c">// inferred: number</span>
+};
+
+<span class="v">user</span>.<span class="v">name</span> <span class="op">=</span> <span class="s">"Raj"</span>;  <span class="c">// ✓ allowed — const doesn't freeze properties</span>
+<span class="v">user</span>.<span class="v">age</span>  <span class="op">=</span> <span class="s">"old"</span>;  <span class="c">// Error: string not assignable to number ← TS protects the shape</span>
+<span class="v">user</span>       <span class="op">=</span> {};    <span class="c">// Error: can't reassign a const ← JS rule, TS enforces it</span>
+
+<span class="c">// as const — makes every property a literal type (truly immutable shape)</span>
+<span class="k">const</span> <span class="v">config</span> <span class="op">=</span> {
+  <span class="v">env</span>: <span class="s">"production"</span>,
+  <span class="v">port</span>: <span class="n">3000</span>
+} <span class="k">as</span> <span class="k">const</span>;
+
+<span class="c">// Now the types are literal, not wide</span>
+<span class="c">// config.env is "production" — not just string</span>
+<span class="c">// config.port is 3000 — not just number</span>
+<span class="v">config</span>.<span class="v">env</span> <span class="op">=</span> <span class="s">"development"</span>; <span class="c">// Error: cannot assign to readonly property</span></pre>
+
+      <div class="mental-model ts-model">
+        <div class="mental-model-icon">💡</div>
+        <p><code>as const</code> is how you tell TypeScript "treat every value here as a read-only literal". Use it for config objects, lookup tables, and any object where you never want the values to change. You'll see this pattern constantly in real TS codebases.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 14 — TS Interview Q&A             -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">14 — TypeScript Interview Q&amp;A</div>
+
+    <div class="interview-section">
+      <div class="interview-header">
+        <span class="interview-badge">Interview</span>
+        <span>TypeScript questions on this topic</span>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What is the difference between type annotation and type inference in TypeScript?</div>
+        <div class="qa-a">
+          <strong>Type annotation</strong> is when you explicitly tell TypeScript the type: <code style="font-family:'IBM Plex Mono',monospace">let age: number = 25</code>. <strong>Type inference</strong> is when TypeScript figures out the type automatically from the assigned value — so <code style="font-family:'IBM Plex Mono',monospace">let age = 25</code> is also typed as <code style="font-family:'IBM Plex Mono',monospace">number</code> without the annotation. Best practice: let TS infer when you assign at declaration, and annotate explicitly when you declare without assigning or when TS infers too broadly.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What is the difference between any and unknown?</div>
+        <div class="qa-a">
+          Both accept any value — but <strong>any</strong> completely disables type checking for that variable, which defeats the purpose of TypeScript. <strong>unknown</strong> is safe: TypeScript forces you to check what type the value actually is (with <code style="font-family:'IBM Plex Mono',monospace">typeof</code>, <code style="font-family:'IBM Plex Mono',monospace">instanceof</code>, or similar) before you can use it. Use <code style="font-family:'IBM Plex Mono',monospace">unknown</code> for things you genuinely don't know the type of — like data from an API call — and avoid <code style="font-family:'IBM Plex Mono',monospace">any</code> almost always.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What is strictNullChecks and why does it matter?</div>
+        <div class="qa-a">
+          <code style="font-family:'IBM Plex Mono',monospace">strictNullChecks</code> is a TypeScript compiler option that makes <code style="font-family:'IBM Plex Mono',monospace">null</code> and <code style="font-family:'IBM Plex Mono',monospace">undefined</code> separate types — they can't be assigned to a <code style="font-family:'IBM Plex Mono',monospace">string</code> or <code style="font-family:'IBM Plex Mono',monospace">number</code> without an explicit union type. It matters because it prevents the single most common runtime error in JavaScript — accessing a property on <code style="font-family:'IBM Plex Mono',monospace">null</code> or <code style="font-family:'IBM Plex Mono',monospace">undefined</code>. All serious TS projects have this enabled.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What does as const do in TypeScript?</div>
+        <div class="qa-a">
+          <code style="font-family:'IBM Plex Mono',monospace">as const</code> tells TypeScript to infer the narrowest possible types for an object or array — making every value a <strong>literal type</strong> and every property <strong>readonly</strong>. For example, without <code style="font-family:'IBM Plex Mono',monospace">as const</code>, <code style="font-family:'IBM Plex Mono',monospace">{env: "production"}</code> has type <code style="font-family:'IBM Plex Mono',monospace">{env: string}</code>. With <code style="font-family:'IBM Plex Mono',monospace">as const</code>, it becomes <code style="font-family:'IBM Plex Mono',monospace">{readonly env: "production"}</code> — much more precise and immutable.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">Why does TypeScript allow mutating a const object's properties?</div>
+        <div class="qa-a">
+          Because TypeScript follows JavaScript's rules. <code style="font-family:'IBM Plex Mono',monospace">const</code> in JS only prevents <em>reassignment</em> of the variable binding — it says nothing about the object's contents. TypeScript models this faithfully. If you want TypeScript to also prevent property mutation, you can use <code style="font-family:'IBM Plex Mono',monospace">as const</code> or the <code style="font-family:'IBM Plex Mono',monospace">Readonly&lt;T&gt;</code> utility type (covered in Phase 3).
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What does the ! (non-null assertion) operator do?</div>
+        <div class="qa-a">
+          The <code style="font-family:'IBM Plex Mono',monospace">!</code> after an expression tells TypeScript "I know this value is not null or undefined — trust me." It removes <code style="font-family:'IBM Plex Mono',monospace">null</code> and <code style="font-family:'IBM Plex Mono',monospace">undefined</code> from the type so you can use the value without a null check. It should be used sparingly — if you're wrong, you still get a runtime crash. Prefer an actual <code style="font-family:'IBM Plex Mono',monospace">if</code> check over <code style="font-family:'IBM Plex Mono',monospace">!</code> whenever possible.
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  SECTION 15 — Full Key Takeaways           -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">15 — Complete Key Takeaways</div>
+
+    <div class="summary-card">
+      <h4>JavaScript + TypeScript — What to Lock In</h4>
+      <ul class="summary-list">
+        <li>Use <strong>const by default</strong>, let when you must reassign, never var in modern code.</li>
+        <li><strong>const doesn't mean immutable</strong> — use <code style="font-family:'IBM Plex Mono',monospace">as const</code> in TypeScript when you want true immutability.</li>
+        <li>Primitives are copied <strong>by value</strong>, objects by <strong>reference</strong> — TypeScript knows this and types both correctly.</li>
+        <li><strong>Type inference</strong> means you don't need to annotate everything — TS figures it out from the assigned value.</li>
+        <li><strong>Never use any</strong> — use <code style="font-family:'IBM Plex Mono',monospace">unknown</code> instead when the type is genuinely unknown, then narrow it.</li>
+        <li>Always enable <strong>strictNullChecks</strong> — it forces you to handle null/undefined explicitly and prevents an entire class of bugs.</li>
+        <li>Use <strong>optional chaining (?.) </strong> for safe access on possibly-null values. Use <strong>!</strong> only when you're certain.</li>
+        <li><strong>typeof null === "object"</strong> is still a bug in TS-land — always check null with <code style="font-family:'IBM Plex Mono',monospace">=== null</code> not <code style="font-family:'IBM Plex Mono',monospace">typeof</code>.</li>
+        <li>Only <strong>6 falsy values</strong> in JS: false, 0, "", null, undefined, NaN — TypeScript doesn't change this.</li>
+        <li>Always use <strong>===</strong> for equality — TypeScript enforces strict equality thinking by making types explicit.</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
