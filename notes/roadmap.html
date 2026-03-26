@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JS + TS → React Roadmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0f0f11;
+    --bg2:     #161619;
+    --bg3:     #1e1e23;
+    --bg4:     #26262d;
+    --border:  rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text:    #e8e6df;
+    --text2:   #9b9890;
+    --text3:   #5e5c57;
+    --js:      #F0B429;
+    --js-dim:  rgba(240,180,41,0.12);
+    --ts:      #3B82F6;
+    --ts-dim:  rgba(59,130,246,0.1);
+    --react:   #38BDF8;
+    --react-dim: rgba(56,189,248,0.1);
+    --bridge:  #8B5CF6;
+    --bridge-dim: rgba(139,92,246,0.1);
+    --complete: #22C55E;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 1.5rem 1.5rem 3rem;
+  }
+
+  #app { max-width: 680px; margin: 0 auto; }
+
+  /* Hero */
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0 1.25rem;
+    border-bottom: 0.5px solid var(--border2);
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .hero-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .hero-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .badge-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+  }
+  .badge-js  { background: rgba(240,180,41,0.15); color: #F0B429; border: 0.5px solid rgba(240,180,41,0.3); }
+  .badge-ts  { background: rgba(59,130,246,0.15); color: #93C5FD; border: 0.5px solid rgba(59,130,246,0.3); }
+  .badge-react { background: rgba(56,189,248,0.15); color: #7DD3FC; border: 0.5px solid rgba(56,189,248,0.3); }
+
+  /* Progress */
+  .progress-label {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .progress-bar-wrap {
+    background: var(--bg3);
+    border-radius: 8px;
+    height: 6px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--js) 0%, var(--ts) 40%, var(--react) 100%);
+    transition: width 0.4s ease;
+  }
+
+  /* Phase sections */
+  .phase-section { margin-bottom: 1rem; }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    border: 0.5px solid var(--border2);
+    background: var(--bg2);
+    transition: background 0.15s;
+  }
+  .phase-header:hover { background: var(--bg3); }
+
+  .phase-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .phase-title { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+  .phase-meta { font-size: 11px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; }
+  .phase-chevron {
+    font-size: 10px;
+    color: var(--text3);
+    transition: transform 0.2s;
+    display: inline-block;
+    line-height: 1;
+  }
+  .phase-chevron.open { transform: rotate(90deg); }
+
+  .phase-body {
+    display: none;
+    border: 0.5px solid var(--border2);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    background: var(--bg2);
+    overflow: hidden;
+  }
+  .phase-body.open { display: block; }
+
+  /* Section label */
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 9px 16px 6px;
+    background: var(--bg3);
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  /* Topic rows */
+  .topic-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 11px 16px;
+    border-bottom: 0.5px solid var(--border);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .topic-row:last-child { border-bottom: none; }
+  .topic-row:hover { background: var(--bg3); }
+
+  .topic-check {
+    width: 17px;
+    height: 17px;
+    border-radius: 4px;
+    border: 0.5px solid var(--border2);
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    background: var(--bg3);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .topic-check.done { background: var(--complete); border-color: var(--complete); color: #fff; }
+
+  .topic-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; line-height: 1.4; }
+  .topic-name.done { text-decoration: line-through; color: var(--text3); }
+  .topic-desc { font-size: 12px; color: var(--text2); line-height: 1.55; }
+
+  .topic-tags { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
+  .tag { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; letter-spacing: 0.02em; }
+  .tag-interview { background: rgba(240,180,41,0.12); color: #F0B429; }
+  .tag-practical  { background: rgba(74,222,128,0.1); color: #4ade80; }
+  .tag-concept    { background: rgba(192,132,252,0.1); color: #c084fc; }
+  .tag-ts         { background: rgba(59,130,246,0.12); color: #93C5FD; }
+  .tag-react-bridge { background: rgba(56,189,248,0.12); color: #7DD3FC; }
+
+  /* Banners */
+  .banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 16px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  .banner-ts    { background: rgba(59,130,246,0.08);  border: 0.5px solid rgba(59,130,246,0.25); }
+  .banner-react { background: rgba(56,189,248,0.08); border: 0.5px solid rgba(56,189,248,0.25); }
+  .banner-icon { font-size: 20px; line-height: 1; }
+  .banner-ts .banner-text strong    { font-size: 13px; font-weight: 500; color: #93C5FD; display: block; margin-bottom: 2px; }
+  .banner-ts .banner-text span      { font-size: 12px; color: rgba(147,197,253,0.7); }
+  .banner-react .banner-text strong { font-size: 13px; font-weight: 500; color: #7DD3FC; display: block; margin-bottom: 2px; }
+  .banner-react .banner-text span   { font-size: 12px; color: rgba(125,211,252,0.7); }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 0 4px;
+    border-top: 0.5px solid var(--border2);
+    margin-top: 1.25rem;
+    align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text3); }
+  .legend-dot  { width: 8px; height: 8px; border-radius: 3px; }
+
+  .reset-btn {
+    font-size: 11px;
+    color: var(--text3);
+    background: none;
+    border: 0.5px solid var(--border2);
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: auto;
+    transition: background 0.12s, color 0.12s;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .reset-btn:hover { background: var(--bg3); color: var(--text2); }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hero">
+    <div>
+      <div class="hero-title">JavaScript + TypeScript → React</div>
+      <div class="hero-sub">Deep understanding · Interview-ready · Practical coding</div>
+    </div>
+    <div class="badge-row">
+      <span class="badge badge-js">JS Core</span>
+      <span class="badge badge-ts">TypeScript</span>
+      <span class="badge badge-react">React</span>
+    </div>
+  </div>
+
+  <div class="progress-label">
+    <span id="prog-text">0 of 0 topics completed</span>
+    <span id="prog-pct">0%</span>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="prog-bar" style="width:0%"></div>
+  </div>
+
+  <div id="phases-container"></div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#F0B429"></div>JS Phase</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3B82F6"></div>TS Phase</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6"></div>Bridge</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#38BDF8"></div>React</div>
+    <div class="legend-item"><span style="background:rgba(240,180,41,0.12);color:#F0B429;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:500;">interview</span></div>
+    <div class="legend-item"><span style="background:rgba(74,222,128,0.1);color:#4ade80;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:500;">practical</span></div>
+    <div class="legend-item"><span style="background:rgba(59,130,246,0.12);color:#93C5FD;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:500;">typescript</span></div>
+    <button class="reset-btn" onclick="resetAll()">Reset progress</button>
+  </div>
+</div>
+
+<script>
+const phases = [
+  {
+    id:'p1', title:'Phase 1 — JS + TS Foundations', color:'#F0B429', duration:'2–3 weeks',
+    sections:[
+      { label:'Core JavaScript', topics:[
+        {id:'t1', name:'Variables, types & type coercion', desc:'var/let/const, primitive vs reference types, implicit coercion, == vs ===, typeof, null vs undefined', tags:['interview','concept']},
+        {id:'t2', name:'Scope & the scope chain', desc:'Lexical scope, block scope, function scope — how JS finds variables up the chain', tags:['interview','concept']},
+        {id:'t3', name:'Hoisting', desc:'var hoisting, function declaration hoisting, TDZ for let/const — why order matters', tags:['interview','concept']},
+        {id:'t4', name:'Functions — all forms', desc:'Declarations vs expressions vs arrow functions — behavioral differences, not just syntax', tags:['interview','practical']},
+        {id:'t5', name:'The this keyword', desc:'"this" in regular functions, arrow functions, methods. call, apply, bind to control it explicitly', tags:['interview','concept']},
+        {id:'t6', name:'Arrays & array methods', desc:'map, filter, reduce, find, some, every, flat, flatMap — what each returns and when to use it', tags:['interview','practical']},
+        {id:'t7', name:'Objects deep dive', desc:'Property access, computed keys, Object.keys/values/entries, spread/rest, destructuring', tags:['interview','practical']},
+        {id:'t8', name:'Strings & template literals', desc:'String methods, template literals, tagged templates', tags:['practical']},
+      ]},
+      { label:'TypeScript Layer', topics:[
+        {id:'t9', name:'What TypeScript is & how it works', desc:'TS is JS + types. The compiler (tsc), tsconfig.json basics, why TS catches bugs JS can\'t', tags:['ts','concept']},
+        {id:'t10', name:'Type annotations & inference', desc:'Annotating variables, parameters, return types. When TS infers types for you — and when you must be explicit', tags:['ts','interview']},
+        {id:'t11', name:'Primitive types & special types', desc:'string, number, boolean, null, undefined, any, unknown, never, void — what each means in TS', tags:['ts','interview']},
+        {id:'t12', name:'Union & intersection types', desc:'string | number, A & B — expressing "one of these" or "all of these". Narrowing with typeof/instanceof', tags:['ts','interview']},
+        {id:'t13', name:'Type aliases & interfaces', desc:'type vs interface — when to use each, extending interfaces, merging declarations', tags:['ts','interview']},
+        {id:'t14', name:'Arrays, tuples & enums', desc:'Typed arrays (string[]), fixed-length tuples, const enums vs union types — practical TS data shapes', tags:['ts','practical']},
+      ]}
+    ]
+  },
+  {
+    id:'p2', title:'Phase 2 — How JS/TS Actually Works', color:'#F0B429', duration:'2–3 weeks',
+    sections:[
+      { label:'Engine & Runtime', topics:[
+        {id:'t15', name:'The execution context & call stack', desc:'Global EC, function EC, the call stack — visualize how JS executes code step by step', tags:['interview','concept']},
+        {id:'t16', name:'Closures — the real deal', desc:'A function remembering its outer scope. Build a counter, a memoizer — closures are everywhere in TS too', tags:['interview','practical']},
+        {id:'t17', name:'The Event Loop, task & microtask queue', desc:'Why JS is non-blocking. setTimeout vs Promise ordering. The most common async interview question', tags:['interview','concept']},
+        {id:'t18', name:'Prototypes & prototype chain', desc:'How JS inheritance works under the hood — what TS classes compile down to', tags:['interview','concept']},
+      ]},
+      { label:'Async JavaScript + TypeScript', topics:[
+        {id:'t19', name:'Callbacks & callback hell', desc:'Understand the problem before the solution. Why callbacks get messy and untyped', tags:['concept']},
+        {id:'t20', name:'Promises — creation & chaining', desc:'new Promise(), .then(), .catch(), .finally(). Typing Promise<T> in TypeScript', tags:['interview','practical','ts']},
+        {id:'t21', name:'async / await', desc:'Syntactic sugar over Promises. try/catch error handling. Typing async functions with Promise<T>', tags:['interview','practical','ts']},
+        {id:'t22', name:'Fetch API & HTTP basics', desc:'Making real network requests, handling JSON, HTTP methods, status codes. Typing API responses', tags:['practical','ts']},
+      ]}
+    ]
+  },
+  {
+    id:'p3', title:'Phase 3 — Modern JS & TypeScript Patterns', color:'#3B82F6', duration:'2–3 weeks',
+    sections:[
+      { label:'ES6+ with TypeScript', topics:[
+        {id:'t23', name:'Destructuring & spread/rest in TS', desc:'Typed destructuring with defaults and renaming. Spreading objects and maintaining type safety', tags:['interview','practical','ts']},
+        {id:'t24', name:'Modules (ESM) in TypeScript', desc:'import/export, .d.ts declaration files, module resolution, path aliases in tsconfig', tags:['practical','ts']},
+        {id:'t25', name:'Classes in TypeScript', desc:'class syntax, access modifiers (public/private/protected/readonly), abstract classes, implements', tags:['interview','ts']},
+        {id:'t26', name:'Generics — the most powerful TS feature', desc:'<T> for reusable, type-safe code. Generic functions, interfaces, classes. Constraints with extends', tags:['interview','ts']},
+        {id:'t27', name:'Utility types', desc:'Partial<T>, Required<T>, Readonly<T>, Pick<T,K>, Omit<T,K>, Record<K,V>, ReturnType<T> — TS built-ins you\'ll use daily', tags:['interview','ts']},
+        {id:'t28', name:'Map, Set, WeakMap, WeakSet', desc:'When to use Map over object, Set for uniqueness — with proper TS typing', tags:['interview','practical']},
+      ]},
+      { label:'Type-Level Thinking', topics:[
+        {id:'t29', name:'Type narrowing & type guards', desc:'typeof, instanceof, in operator, custom type predicates (value is Type) — making TS understand your logic', tags:['interview','ts']},
+        {id:'t30', name:'Discriminated unions', desc:'The most useful TS pattern. Model state machines, API responses, UI states — exhaustively checked by TS', tags:['interview','ts']},
+        {id:'t31', name:'Pure functions & immutability in TS', desc:'readonly, as const, Readonly<T> — enforcing immutability at the type level. Critical for React state', tags:['interview','ts','react-bridge']},
+        {id:'t32', name:'Error handling patterns in TS', desc:'try/catch with typed errors, Result/Either patterns, never for exhaustive checks', tags:['practical','ts']},
+      ]}
+    ]
+  },
+  {
+    id:'p4', title:'Phase 4 — DOM & Browser APIs with TypeScript', color:'#F0B429', duration:'1–2 weeks',
+    sections:[
+      { label:'DOM with Types', topics:[
+        {id:'t33', name:'DOM types in TypeScript', desc:'HTMLElement, HTMLInputElement, HTMLButtonElement — the TS DOM type hierarchy. Casting with as', tags:['practical','ts']},
+        {id:'t34', name:'DOM selection & manipulation', desc:'querySelector with generics, type-safe event listeners, NodeList typing', tags:['practical','ts']},
+        {id:'t35', name:'Events & event delegation in TS', desc:'MouseEvent, KeyboardEvent, InputEvent — typing event handlers correctly. Event delegation patterns', tags:['interview','practical','ts']},
+        {id:'t36', name:'Forms & user input in TS', desc:'Typing FormData, input events, validation — building type-safe forms before React', tags:['practical','ts']},
+      ]},
+      { label:'Browser APIs', topics:[
+        {id:'t37', name:'localStorage & sessionStorage', desc:'Persisting data, JSON serialization — and wrapping storage with a typed helper function', tags:['practical']},
+        {id:'t38', name:'Timers, debounce & throttle', desc:'setTimeout, setInterval, requestAnimationFrame. Typed debounce & throttle utilities', tags:['interview','practical']},
+      ]}
+    ]
+  },
+  {
+    id:'p5', title:'Phase 5 — Bridge to React', color:'#8B5CF6', duration:'1 week',
+    sections:[
+      { label:'The Mental Shift', topics:[
+        {id:'t39', name:'Thinking in components', desc:'UI as a function of state. Composing small pieces into large UIs. Single responsibility principle', tags:['react-bridge','concept']},
+        {id:'t40', name:'Immutable state updates in TS', desc:'Why you never mutate state directly. Readonly<T>, spread patterns — enforced by TypeScript', tags:['react-bridge','interview','ts']},
+        {id:'t41', name:'Array transformations for UI', desc:'.map() to render lists, .filter() to show/hide, .reduce() for derived state — typed React patterns', tags:['react-bridge','practical']},
+        {id:'t42', name:'Discriminated unions for UI state', desc:'Loading | Success | Error state modeling — exactly how you\'ll type async UI in React', tags:['react-bridge','ts']},
+        {id:'t43', name:'Async patterns in UI context', desc:'Loading states, error states, success states — the data-fetching lifecycle you\'ll implement in React', tags:['react-bridge','practical']},
+      ]}
+    ]
+  },
+  {
+    id:'p6', title:'Phase 6 — React Core with TypeScript', color:'#38BDF8', duration:'3–4 weeks',
+    sections:[
+      { label:'React Fundamentals', topics:[
+        {id:'t44', name:'JSX & the virtual DOM', desc:'JSX is syntactic sugar for React.createElement. Typing JSX.Element vs ReactNode vs ReactElement', tags:['interview','concept','ts']},
+        {id:'t45', name:'Typing components & props', desc:'FC<Props>, typing children (ReactNode), optional props, default props — the foundation of typed React', tags:['interview','practical','ts']},
+        {id:'t46', name:'useState with TypeScript', desc:'Inferring state type, explicit generics useState<T>(), typing complex state shapes', tags:['interview','practical','ts']},
+        {id:'t47', name:'useEffect with TypeScript', desc:'Dependency array, cleanup functions, typing effects — and common mistakes TS catches for you', tags:['interview','practical','ts']},
+        {id:'t48', name:'Conditional rendering', desc:'&&, ternary, early returns — with TS ensuring you never render undefined accidentally', tags:['practical']},
+        {id:'t49', name:'Lists & keys', desc:'.map() to render typed lists, stable keys, reconciliation — TS catches missing keys', tags:['interview','practical']},
+      ]},
+      { label:'Forms & Events', topics:[
+        {id:'t50', name:'Typing events in React', desc:'React.ChangeEvent<HTMLInputElement>, React.FormEvent, React.MouseEvent — the full event typing system', tags:['interview','practical','ts']},
+        {id:'t51', name:'Controlled vs uncontrolled components', desc:'React-managed form state vs useRef DOM access. Typing both approaches correctly', tags:['interview','practical','ts']},
+      ]}
+    ]
+  },
+  {
+    id:'p7', title:'Phase 7 — React Intermediate with TypeScript', color:'#38BDF8', duration:'3–4 weeks',
+    sections:[
+      { label:'Hooks Deep Dive', topics:[
+        {id:'t52', name:'useRef with TypeScript', desc:'Typing DOM refs (RefObject<HTMLElement>), mutable refs for values — and the null handling pattern', tags:['interview','practical','ts']},
+        {id:'t53', name:'useContext with TypeScript', desc:'Typing context values, the undefined safety problem, createContext with a default, typed consumers', tags:['interview','practical','ts']},
+        {id:'t54', name:'useReducer with TypeScript', desc:'Typing actions as discriminated unions, typed dispatch, how this maps to Redux thinking', tags:['interview','practical','ts']},
+        {id:'t55', name:'useMemo & useCallback with TypeScript', desc:'Type inference in memoized values, typed callbacks — and when memoization is premature', tags:['interview','concept']},
+        {id:'t56', name:'Custom hooks with TypeScript', desc:'Typed return values, generic custom hooks — useFetch<T>, useLocalStorage<T>, useDebounce<T>', tags:['interview','practical','ts']},
+      ]},
+      { label:'Patterns & Architecture', topics:[
+        {id:'t57', name:'Component composition patterns', desc:'Typed compound components, render props with generics, typed HOCs — interview and real codebase patterns', tags:['interview','concept','ts']},
+        {id:'t58', name:'Data fetching patterns', desc:'Typed useEffect + fetch, loading/error/data state with discriminated unions, React Query with TS generics', tags:['practical','ts']},
+        {id:'t59', name:'React Router with TypeScript', desc:'Typing useParams, useNavigate, route params — type-safe navigation', tags:['practical','ts']},
+        {id:'t60', name:'Zustand / Redux Toolkit with TypeScript', desc:'Typed stores, typed actions, typed selectors — global state done right', tags:['practical','ts']},
+      ]}
+    ]
+  },
+  {
+    id:'p8', title:'Phase 8 — Production React + TypeScript', color:'#38BDF8', duration:'2–3 weeks',
+    sections:[
+      { label:'Performance & Quality', topics:[
+        {id:'t61', name:'React performance with TypeScript', desc:'React.memo with typed props, typed profiler, code splitting with lazy/Suspense — typed throughout', tags:['interview','practical']},
+        {id:'t62', name:'Error boundaries in TypeScript', desc:'Typing ErrorBoundary class components, typed fallback props, error logging with type safety', tags:['practical','ts']},
+        {id:'t63', name:'Testing with TypeScript', desc:'React Testing Library + TS, typing mocked APIs, testing typed custom hooks', tags:['practical','ts']},
+      ]},
+      { label:'Real-World Skills', topics:[
+        {id:'t64', name:'Advanced TypeScript patterns', desc:'Conditional types, mapped types, template literal types, infer keyword — for reading and writing library code', tags:['ts','interview']},
+        {id:'t65', name:'Next.js with TypeScript', desc:'File-based routing, typed server actions, App Router, Server Components, typed page props', tags:['practical','ts']},
+        {id:'t66', name:'Styling approaches', desc:'CSS Modules with TS, typed Tailwind with tw-merge, styled-components with TS generics', tags:['practical']},
+      ]}
+    ]
+  }
+];
+
+let checked = {};
+try { checked = JSON.parse(localStorage.getItem('js_ts_roadmap_v1') || '{}'); } catch(e){}
+function save() { try { localStorage.setItem('js_ts_roadmap_v1', JSON.stringify(checked)); } catch(e){} }
+function allTopics() { return phases.flatMap(p => p.sections.flatMap(s => s.topics)); }
+function updateProgress() {
+  const all = allTopics(), done = all.filter(t => checked[t.id]).length;
+  const pct = all.length ? Math.round(done/all.length*100) : 0;
+  document.getElementById('prog-text').textContent = `${done} of ${all.length} topics completed`;
+  document.getElementById('prog-pct').textContent = `${pct}%`;
+  document.getElementById('prog-bar').style.width = pct+'%';
+}
+function toggle(id) {
+  checked[id] = !checked[id]; save();
+  const row = document.querySelector(`[data-topic="${id}"]`);
+  if (row) {
+    const chk = row.querySelector('.topic-check'), nm = row.querySelector('.topic-name');
+    chk.textContent = checked[id] ? '✓' : '';
+    chk.classList.toggle('done', !!checked[id]);
+    nm.classList.toggle('done', !!checked[id]);
+  }
+  updateProgress();
+}
+function resetAll() {
+  checked = {}; save();
+  document.querySelectorAll('.topic-check').forEach(el => { el.textContent=''; el.classList.remove('done'); });
+  document.querySelectorAll('.topic-name').forEach(el => el.classList.remove('done'));
+  updateProgress();
+}
+function tagHtml(tags) {
+  return tags.map(t => {
+    const map = {'react-bridge':'tag-react-bridge','ts':'tag-ts','interview':'tag-interview','practical':'tag-practical','concept':'tag-concept'};
+    const labels = {'react-bridge':'react bridge','ts':'typescript'};
+    return `<span class="tag ${map[t]||'tag-concept'}">${labels[t]||t}</span>`;
+  }).join('');
+}
+function render() {
+  const container = document.getElementById('phases-container');
+  let html = '';
+  phases.forEach((phase, pi) => {
+    if (pi === 2) html += `<div class="banner banner-ts"><div class="banner-icon">🔷</div><div class="banner-text"><strong>TypeScript takes centre stage</strong><span>From here, every topic is taught through a TypeScript lens — types are not optional extras, they're the way you think</span></div></div>`;
+    if (pi === 5) html += `<div class="banner banner-react"><div class="banner-icon">⚡</div><div class="banner-text"><strong>You're ready for React</strong><span>JS + TS foundations complete — React will feel natural because you already think in types and components</span></div></div>`;
+    html += `<div class="phase-section">
+      <div class="phase-header" onclick="togglePhase('${phase.id}')">
+        <div class="phase-dot" style="background:${phase.color}"></div>
+        <div class="phase-title">${phase.title}</div>
+        <div class="phase-meta">${phase.duration}</div>
+        <span class="phase-chevron ${pi<1?'open':''}" id="chev-${phase.id}">▶</span>
+      </div>
+      <div class="phase-body ${pi<1?'open':''}" id="body-${phase.id}">`;
+    phase.sections.forEach(sec => {
+      html += `<div class="section-label">${sec.label}</div>`;
+      sec.topics.forEach(topic => {
+        const isDone = checked[topic.id];
+        html += `<div class="topic-row" data-topic="${topic.id}" onclick="toggle('${topic.id}')">
+          <div class="topic-check ${isDone?'done':''}">${isDone?'✓':''}</div>
+          <div class="topic-content">
+            <div class="topic-name ${isDone?'done':''}">${topic.name}</div>
+            <div class="topic-desc">${topic.desc}</div>
+            <div class="topic-tags">${tagHtml(topic.tags)}</div>
+          </div></div>`;
+      });
+    });
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+  updateProgress();
+}
+function togglePhase(id) {
+  const body = document.getElementById('body-'+id), chev = document.getElementById('chev-'+id);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+render();
+</script>
+</body>
+</html>
