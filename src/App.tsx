@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar'
 import ContentPanel from './components/ContentPanel'
 import MobileDrawer from './components/MobileDrawer'
 
-export type TopicId = 'roadmap' | 'variables-types' | 'scope' | 'hoisting' | 'functions' | 'thisKeyword' | 'arrays'
+export type TopicId = 'roadmap' | 'variables-types' | 'scope' | 'hoisting' | 'functions' | 'thisKeyword' | 'arrays' | 'objects'
 
 export interface Topic {
   id: TopicId
@@ -80,6 +80,16 @@ export const TOPICS: Topic[] = [
     tags: ['interview', 'practical'],
     description: 'Array methods, manipulation, and best practices',
   },
+  {
+    id: 'objects',
+    label: 'Objects',
+    file: '/js-ts-react-docs-app/notes/objects.html',
+    phase: 'Phase 1',
+    phaseColor: '#F0B429',
+    tags: ['interview', 'practical'],
+    description: 'Array methods, manipulation, and best practices',
+  },
+
 ]
 
 export default function App() {
