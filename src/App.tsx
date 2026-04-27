@@ -71,6 +71,15 @@ export const TOPICS: Topic[] = [
     tags: ['interview', 'practical'],
     description: '"this" in regular functions, arrow functions, methods. call, apply, bind to control it explicitly',
   },
+  {
+    id: 'arrays',
+    label: 'Arrays',
+    file: '/js-ts-react-docs-app/notes/arrays.html',
+    phase: 'Phase 1',
+    phaseColor: '#F0B429',
+    tags: ['interview', 'practical'],
+    description: 'Array methods, manipulation, and best practices',
+  },
 ]
 
 export default function App() {
