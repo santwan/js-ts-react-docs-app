@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar'
 import ContentPanel from './components/ContentPanel'
 import MobileDrawer from './components/MobileDrawer'
 
-export type TopicId = 'roadmap' | 'variables-types' | 'scope' | 'hoisting' | 'functions' | 'thisKeyword'
+export type TopicId = 'roadmap' | 'variables-types' | 'scope' | 'hoisting' | 'functions' | 'thisKeyword' | 'arrays'
 
 export interface Topic {
   id: TopicId
